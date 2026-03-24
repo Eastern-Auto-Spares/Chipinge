@@ -514,13 +514,14 @@
 
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
   import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    browserLocalPersistence,
+    setPersistence
   } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
   import {
     getFirestore,
@@ -547,7 +548,6 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
@@ -616,6 +616,20 @@
     let currentUserRole = "guest";
     let parts = [];
     let cart = JSON.parse(localStorage.getItem("eas-cart") || "[]");
+
+    const authErrorMessages = {
+      "auth/email-already-in-use": "That email already has an account. Try logging in instead.",
+      "auth/invalid-email": "Enter a valid email address.",
+      "auth/invalid-credential": "The email or password is incorrect.",
+      "auth/missing-password": "Enter your password to continue.",
+      "auth/too-many-requests": "Too many login attempts. Please wait a moment and try again.",
+      "auth/user-disabled": "This account has been disabled.",
+      "auth/user-not-found": "No account was found for that email.",
+      "auth/weak-password": "Use a stronger password with at least 6 characters.",
+      "auth/network-request-failed": "Network connection failed. Check your internet connection and try again.",
+      "auth/operation-not-allowed": "Email/password login is not enabled in Firebase Auth yet.",
+      "auth/unauthorized-domain": "This site domain is not authorized in Firebase Auth. Add it in the Firebase console and try again."
+    };
 
     const demoParts = [
       {
@@ -723,6 +737,10 @@
     }
 
     function openAuthModal() {
+      updateAuthPanelVisibility();
+      if (!currentUser && window.location.protocol === "file:") {
+        els.authStatus.textContent = "Open this page through localhost or a hosted domain for reliable Firebase login.";
+      }
       els.authModal.classList.remove("hidden");
     }
 
@@ -742,6 +760,25 @@
       els.signupTabBtn.classList.toggle("active-tab", !loginActive);
       els.loginTabBtn.classList.toggle("text-slate-600", !loginActive);
       els.signupTabBtn.classList.toggle("text-slate-600", loginActive);
+    }
+
+    function updateAuthPanelVisibility() {
+      const isSignedIn = !!currentUser;
+      els.authForm.classList.toggle("hidden", isSignedIn);
+      els.signedInPanel.classList.toggle("hidden", !isSignedIn);
+    }
+
+    function getReadableAuthError(error) {
+      if (!error) return "Authentication failed. Please try again.";
+      return authErrorMessages[error.code] || error.message || "Authentication failed. Please try again.";
+    }
+
+    async function initializeAuthPersistence() {
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (error) {
+        console.warn("Auth persistence setup failed.", error);
+      }
     }
 
     async function ensureUserDoc(user, name = "") {
@@ -970,24 +1007,33 @@
         return;
       }
 
+      els.authSubmitBtn.disabled = true;
+      els.authSubmitBtn.classList.add("opacity-60", "cursor-not-allowed");
+
       try {
         if (authMode === "signup") {
           if (!name) {
             els.authStatus.textContent = "Full name is required for sign up.";
+            els.authSubmitBtn.disabled = false;
+            els.authSubmitBtn.classList.remove("opacity-60", "cursor-not-allowed");
             return;
           }
 
           const result = await createUserWithEmailAndPassword(auth, email, password);
           await ensureUserDoc(result.user, name);
-          els.authStatus.textContent = "Account created successfully.";
+          els.authStatus.textContent = "Account created successfully. You are now signed in.";
         } else {
           await signInWithEmailAndPassword(auth, email, password);
           els.authStatus.textContent = "Logged in successfully.";
         }
 
         els.authForm.reset();
+        closeAuthModal();
       } catch (error) {
-        els.authStatus.textContent = error.message;
+        els.authStatus.textContent = getReadableAuthError(error);
+      } finally {
+        els.authSubmitBtn.disabled = false;
+        els.authSubmitBtn.classList.remove("opacity-60", "cursor-not-allowed");
       }
     }
 
@@ -1128,23 +1174,22 @@ ${notes}`;
       if (!isSignedIn) {
         els.sessionTitle.textContent = "Guest Browsing";
         els.sessionText.textContent = "Browse parts, add items to cart, and log in to place orders online.";
+        els.orderStatus.textContent = "Sign in to attach your account to orders. Guests can still prepare carts.";
       } else if (isStaff) {
         els.sessionTitle.textContent = "Staff Session";
         els.sessionText.textContent = "You can manage parts, classify inventory, and review the storefront as a live customer would.";
+        els.orderStatus.textContent = "Staff account linked. Orders will include your signed-in identity.";
       } else {
         els.sessionTitle.textContent = "Customer Session";
         els.sessionText.textContent = "Your account is active. You can now place orders with your signed-in identity.";
+        els.orderStatus.textContent = "Signed in successfully. Your orders will be linked to your account.";
       }
 
       els.roleBadge.classList.toggle("hidden", !isStaff);
       els.staffPanelSection.classList.toggle("hidden", !isStaff);
 
-      if (isSignedIn) {
-        els.signedInPanel.classList.remove("hidden");
-        els.signedInUserText.textContent = `${currentUser.email} • ${currentUserRole}`;
-      } else {
-        els.signedInPanel.classList.add("hidden");
-      }
+      els.signedInUserText.textContent = isSignedIn ? `${currentUser.email} • ${currentUserRole}` : "";
+      updateAuthPanelVisibility();
     }
 
     function wireEvents() {
@@ -1188,6 +1233,7 @@ ${notes}`;
       updateSessionUI();
     });
 
+    initializeAuthPersistence();
     wireEvents();
     setAuthMode("login");
     renderCart();
