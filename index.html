@@ -3,168 +3,205 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eastern Auto Spares | Parts, Pricing & Online Orders</title>
+  <title>Eastern Auto Spares | Live Parts, Cart & Orders</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Space Grotesk', 'sans-serif'],
-            body: ['Manrope', 'sans-serif']
-          },
-          colors: {
-            brand: {
-              50: '#fff3f2',
-              100: '#ffe1de',
-              500: '#d63a2f',
-              600: '#bf2f26',
-              700: '#94231d',
-              900: '#34100d'
-            },
-            ink: '#0d141f',
-            steel: '#192435'
-          },
-          boxShadow: {
-            glow: '0 20px 60px rgba(214,58,47,0.20)',
-            soft: '0 20px 50px rgba(15,23,42,0.10)'
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Manrope', sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(214,58,47,0.18), transparent 32%),
-        radial-gradient(circle at top right, rgba(59,130,246,0.16), transparent 25%),
-        linear-gradient(180deg, #09111b 0%, #101826 28%, #f5f7fb 28%, #f5f7fb 100%);
+    :root {
+      --gem-blue: #4285f4;
+      --gem-cyan: #00c2ff;
+      --gem-orange: #ff8a00;
+      --gem-pink: #ff4d8d;
+      --ink: #0f172a;
+      --soft: #f6f8fc;
     }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(66,133,244,0.20), transparent 28%),
+        radial-gradient(circle at 100% 10%, rgba(0,194,255,0.18), transparent 24%),
+        radial-gradient(circle at 75% 0%, rgba(255,138,0,0.12), transparent 20%),
+        linear-gradient(180deg, #07111f 0%, #0f172a 22%, #f6f8fc 22%, #f6f8fc 100%);
+      color: var(--ink);
+    }
+
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+
     .glass {
-      background: rgba(255,255,255,0.76);
+      background: rgba(255,255,255,0.75);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
-    .hero-grid {
-      background-image:
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-      background-size: 28px 28px;
+
+    .hero-bg {
+      background:
+        radial-gradient(circle at 20% 10%, rgba(66,133,244,0.22), transparent 28%),
+        radial-gradient(circle at 80% 0%, rgba(0,194,255,0.16), transparent 20%),
+        radial-gradient(circle at 70% 15%, rgba(255,138,0,0.18), transparent 16%),
+        linear-gradient(135deg, #081120 0%, #13213f 45%, #10203e 100%);
     }
-    .part-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 22px 50px rgba(15,23,42,0.15);
+
+    .gemini-ring {
+      position: relative;
+      overflow: hidden;
     }
+
+    .gemini-ring::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(66,133,244,0.75), rgba(0,194,255,0.65), rgba(255,138,0,0.75));
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
     .hidden-content { display: none; }
-    .tab-active {
+
+    .active-tab {
       color: white;
-      background: linear-gradient(135deg, #d63a2f, #8f2019);
-      box-shadow: 0 10px 30px rgba(214,58,47,0.25);
+      background: linear-gradient(135deg, #4285f4, #00a6ff 55%, #ff8a00);
+      box-shadow: 0 10px 25px rgba(66,133,244,0.25);
     }
-    .staff-badge {
-      background: linear-gradient(135deg, #f59e0b, #dc2626);
+
+    .nice-scroll::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .nice-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.5);
+      border-radius: 999px;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
   </style>
 </head>
-<body class="text-slate-900 font-body">
+<body class="text-slate-900">
   <nav class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-      <a href="#" class="flex flex-col">
-        <span class="font-display text-xl sm:text-2xl font-bold uppercase tracking-tight text-white">Eastern Auto Spares</span>
-        <span class="text-[11px] sm:text-xs uppercase tracking-[0.25em] text-slate-400">Chipinge, Zimbabwe</span>
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <a href="#" class="min-w-0">
+        <div class="font-display text-lg font-bold uppercase tracking-tight text-white sm:text-xl">Eastern Auto Spares</div>
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 sm:text-[11px]">Chipinge, Zimbabwe</div>
       </a>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="showTab('inventory')" id="tab-inv" class="tab-active rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition">Inventory</button>
-        <button onclick="showTab('services')" id="tab-ser" class="rounded-full border border-white/10 px-4 py-2 text-xs sm:text-sm font-bold text-slate-300 transition hover:text-white">Services</button>
-        <button onclick="toggleStaffPanel()" class="rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-xs sm:text-sm font-bold text-amber-300 transition hover:bg-amber-500/20">
-          Staff
+      <div class="flex items-center gap-2">
+        <div id="authStateMini" class="hidden rounded-full border border-white/10 px-3 py-2 text-[11px] font-medium text-slate-300 sm:block"></div>
+
+        <button id="cartNavBtn" class="gemini-ring relative rounded-full bg-white/8 px-3 py-2 text-left text-white transition hover:bg-white/12">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-cart-shopping text-sm"></i>
+            <div class="leading-tight">
+              <div class="text-[10px] uppercase tracking-[0.2em] text-slate-300">Cart</div>
+              <div class="text-xs font-semibold">
+                <span id="navCartCount">0</span> items • <span id="navCartTotal">$0.00</span>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        <button id="openAuthBtn" class="rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10">
+          Login
         </button>
       </div>
     </div>
   </nav>
 
-  <header class="relative overflow-hidden">
-    <div class="hero-grid">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 pt-10 sm:pt-16 pb-12">
-        <div class="grid lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center">
-          <div>
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-300">
-              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-              Live pricing • Mobile first • Order online
-            </div>
-
-            <h1 class="mt-6 max-w-3xl font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-white">
-              Premium spare parts storefront for modern customers and workshop teams.
-            </h1>
-
-            <p class="mt-5 max-w-2xl text-sm sm:text-lg leading-7 text-slate-300">
-              Browse stocked parts, see pricing instantly, place orders online, and manage staff-only pricing adjustments from one polished storefront.
-            </p>
-
-            <div class="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href="#catalog" class="rounded-2xl bg-brand-500 px-6 py-4 text-center font-bold text-white shadow-glow transition hover:bg-brand-600">
-                Browse Parts
-              </a>
-              <a href="#cart-section" class="rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-center font-bold text-white transition hover:bg-white/10">
-                Go To Order Desk
-              </a>
-            </div>
-
-            <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
-              <div class="glass rounded-2xl p-4 shadow-soft">
-                <div class="text-2xl font-display font-bold text-brand-600">120+</div>
-                <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Listed Parts</div>
-              </div>
-              <div class="glass rounded-2xl p-4 shadow-soft">
-                <div class="text-2xl font-display font-bold text-emerald-600">Same Day</div>
-                <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Order Response</div>
-              </div>
-              <div class="glass rounded-2xl p-4 shadow-soft">
-                <div class="text-2xl font-display font-bold text-sky-600">Mobile</div>
-                <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Optimized</div>
-              </div>
-            </div>
+  <header class="hero-bg">
+    <div class="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12">
+      <div class="grid items-center gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] uppercase tracking-[0.25em] text-slate-300 sm:text-[11px]">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            Live inventory • Real login • Firestore orders
           </div>
 
-          <div class="glass rounded-[28px] border border-white/30 p-5 sm:p-6 shadow-soft">
-            <div class="rounded-[24px] bg-slate-950 p-6 text-white">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Featured Today</p>
-                  <h2 class="mt-2 font-display text-2xl font-bold">Toyota & Honda Essentials</h2>
-                </div>
-                <div class="rounded-2xl bg-brand-500/15 p-4 text-brand-300">
-                  <i class="fas fa-warehouse text-2xl"></i>
-                </div>
-              </div>
+          <h1 class="mt-5 max-w-3xl font-display text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            Modern spare parts storefront with real ordering, cart tracking, and staff inventory control.
+          </h1>
 
-              <div class="mt-6 space-y-3">
-                <div class="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                  <span>Front Brake Pad Set</span>
-                  <span class="font-bold text-emerald-300">$38</span>
-                </div>
-                <div class="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                  <span>Engine Oil 5L</span>
-                  <span class="font-bold text-emerald-300">$29</span>
-                </div>
-                <div class="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                  <span>Outer CV Joint</span>
-                  <span class="font-bold text-emerald-300">$52</span>
-                </div>
-              </div>
+          <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+            Search parts, filter by category, add items to cart, place orders online, and let staff securely manage inventory from the same clean mobile-first experience.
+          </p>
 
-              <div class="mt-6 rounded-2xl border border-white/10 bg-gradient-to-r from-brand-500/20 to-orange-500/20 p-4">
-                <p class="text-sm text-slate-200">
-                  Staff pricing controls can increase or decrease all listed prices by a chosen percentage.
-                </p>
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <a href="#catalog" class="rounded-2xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 hover:bg-slate-100">
+              Browse Parts
+            </a>
+            <a href="#checkout" class="rounded-2xl border border-white/15 bg-white/6 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-white/10">
+              Go To Checkout
+            </a>
+          </div>
+
+          <div class="mt-6 grid grid-cols-3 gap-3 sm:max-w-xl">
+            <div class="glass rounded-2xl p-3">
+              <div class="font-display text-lg font-bold text-blue-600 sm:text-xl">Live</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:text-[11px]">Pricing</div>
+            </div>
+            <div class="glass rounded-2xl p-3">
+              <div class="font-display text-lg font-bold text-cyan-600 sm:text-xl">Real</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:text-[11px]">Auth</div>
+            </div>
+            <div class="glass rounded-2xl p-3">
+              <div class="font-display text-lg font-bold text-orange-500 sm:text-xl">Fast</div>
+              <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:text-[11px]">Mobile</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass gemini-ring rounded-[28px] p-4 shadow-2xl sm:p-5">
+          <div class="rounded-[24px] bg-slate-950 p-5 text-white">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 sm:text-[11px]">Today’s Highlights</div>
+                <div class="mt-2 font-display text-2xl font-bold">Workshop Favorites</div>
               </div>
+              <div class="rounded-2xl bg-white/10 p-3 text-cyan-300">
+                <i class="fa-solid fa-warehouse text-xl"></i>
+              </div>
+            </div>
+
+            <div class="mt-5 space-y-3 text-sm">
+              <div class="flex items-center justify-between rounded-2xl bg-white/6 px-4 py-3">
+                <span>Brake Pad Set</span>
+                <span class="font-semibold text-emerald-300" id="heroPrice1">$38.00</span>
+              </div>
+              <div class="flex items-center justify-between rounded-2xl bg-white/6 px-4 py-3">
+                <span>Engine Oil 5L</span>
+                <span class="font-semibold text-emerald-300" id="heroPrice2">$29.00</span>
+              </div>
+              <div class="flex items-center justify-between rounded-2xl bg-white/6 px-4 py-3">
+                <span>Outer CV Joint</span>
+                <span class="font-semibold text-emerald-300" id="heroPrice3">$52.00</span>
+              </div>
+            </div>
+
+            <div class="mt-5 rounded-2xl bg-gradient-to-r from-blue-500/15 via-cyan-400/10 to-orange-400/15 p-4 text-xs leading-6 text-slate-200 sm:text-sm">
+              Staff accounts can add new parts, assign categories like Suspension, Brakes, Cooling, Electrical, and generate part IDs automatically.
             </div>
           </div>
         </div>
@@ -172,463 +209,698 @@
     </div>
   </header>
 
-  <main class="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
-    <div id="inventory-content">
-      <section class="-mt-6 relative z-10">
-        <div class="glass rounded-[28px] border border-white/40 p-4 sm:p-6 shadow-soft">
-          <div class="grid gap-4 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div class="rounded-2xl bg-white p-4 shadow-sm">
-                <label class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Search Parts</label>
-                <div class="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                  <i class="fas fa-search text-slate-400"></i>
-                  <input id="searchInput" type="text" placeholder="Brake pads, oil, filters..." class="w-full bg-transparent outline-none" oninput="renderProducts()" />
-                </div>
-              </div>
-
-              <div class="rounded-2xl bg-white p-4 shadow-sm">
-                <label class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Category</label>
-                <select id="categoryFilter" onchange="renderProducts()" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none">
-                  <option value="all">All Categories</option>
-                  <option value="Brakes">Brakes</option>
-                  <option value="Fluids">Fluids</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Suspension">Suspension</option>
-                  <option value="Engine">Engine</option>
-                  <option value="Emergency">Emergency</option>
-                  <option value="Tools">Tools</option>
-                  <option value="Cooling">Cooling</option>
-                </select>
-              </div>
-
-              <div class="rounded-2xl bg-white p-4 shadow-sm">
-                <label class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Vehicle Family</label>
-                <select id="vehicleFilter" onchange="renderProducts()" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none">
-                  <option value="all">All Vehicles</option>
-                  <option value="Toyota">Toyota</option>
-                  <option value="Honda">Honda</option>
-                  <option value="Mazda">Mazda</option>
-                  <option value="Nissan">Nissan</option>
-                  <option value="Universal">Universal</option>
-                </select>
+  <main class="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+    <section class="-mt-4 relative z-10">
+      <div class="glass rounded-[28px] p-4 shadow-xl sm:p-5">
+        <div class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-2xl bg-white p-4 shadow-sm">
+              <label class="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:text-[11px]">Search</label>
+              <div class="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-3">
+                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                <input id="searchInput" type="text" placeholder="Search parts..." class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
               </div>
             </div>
 
-            <div class="rounded-[24px] bg-slate-950 p-5 text-white">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Pricing Status</p>
-                  <h3 class="mt-2 font-display text-2xl font-bold" id="pricingStatus">Standard Retail</h3>
-                </div>
-                <span id="staffModeBadge" class="hidden staff-badge rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-                  Staff Active
-                </span>
+            <div class="rounded-2xl bg-white p-4 shadow-sm">
+              <label class="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:text-[11px]">Category</label>
+              <select id="categoryFilter" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none">
+                <option value="all">All Categories</option>
+              </select>
+            </div>
+
+            <div class="rounded-2xl bg-white p-4 shadow-sm">
+              <label class="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:text-[11px]">Vehicle</label>
+              <select id="vehicleFilter" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none">
+                <option value="all">All Vehicles</option>
+                <option value="Universal">Universal</option>
+                <option value="Toyota">Toyota</option>
+                <option value="Honda">Honda</option>
+                <option value="Mazda">Mazda</option>
+                <option value="Nissan">Nissan</option>
+              </select>
+            </div>
+
+            <div class="rounded-2xl bg-white p-4 shadow-sm">
+              <label class="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:text-[11px]">Sort</label>
+              <select id="sortFilter" class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none">
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name">Name</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="rounded-[24px] bg-slate-950 p-5 text-white">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 sm:text-[11px]">Session</div>
+                <div id="sessionTitle" class="mt-2 font-display text-xl font-bold sm:text-2xl">Guest Browsing</div>
               </div>
-              <p class="mt-3 text-sm text-slate-300">
-                Customers see live adjusted prices immediately when staff mode changes them.
-              </p>
-              <div class="mt-4 text-sm text-slate-400">
-                Current price adjustment:
-                <span id="adjustmentLabel" class="font-bold text-white">0%</span>
+              <div id="roleBadge" class="hidden rounded-full bg-gradient-to-r from-blue-500 to-orange-400 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:text-[11px]">
+                Staff
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="catalog" class="mt-10">
-        <div class="flex items-end justify-between gap-4 mb-6">
-          <div>
-            <p class="text-xs uppercase tracking-[0.25em] text-brand-600 font-bold">Inventory</p>
-            <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-900">Priced Parts Catalog</h2>
-          </div>
-          <div class="text-sm text-slate-500">
-            <span id="resultCount">0</span> parts available
-          </div>
-        </div>
-
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
-      </section>
-
-      <section class="mt-14 grid lg:grid-cols-[1.05fr_0.95fr] gap-6">
-        <div class="rounded-[28px] bg-white p-6 sm:p-8 shadow-soft">
-          <p class="text-xs uppercase tracking-[0.25em] text-brand-600 font-bold">Specializations</p>
-          <h3 class="mt-2 font-display text-3xl font-bold">Workshop-ready brands and fast moving lines</h3>
-          <div class="mt-6 grid sm:grid-cols-2 gap-4 text-sm text-slate-600">
-            <div class="rounded-2xl bg-slate-50 p-5">
-              <h4 class="font-bold text-slate-900">Toyota Corolla & Wish</h4>
-              <ul class="mt-3 space-y-2">
-                <li>Oil filters, brake pads, CV joints</li>
-                <li>Radiators, spark plugs, wheel nuts</li>
-                <li>Brake discs and engine mounts</li>
-              </ul>
-            </div>
-            <div class="rounded-2xl bg-slate-50 p-5">
-              <h4 class="font-bold text-slate-900">Honda Fit & Mazda Demio</h4>
-              <ul class="mt-3 space-y-2">
-                <li>Tie rod ends and ignition coils</li>
-                <li>Shock absorbers and wheel bearings</li>
-                <li>Fuel pumps and drive belts</li>
-              </ul>
-            </div>
-            <div class="rounded-2xl bg-slate-50 p-5">
-              <h4 class="font-bold text-slate-900">Nissan AD Van & Hiace</h4>
-              <ul class="mt-3 space-y-2">
-                <li>Brake shoes, water pumps, starters</li>
-                <li>Fuel filters, clutch kits, alternators</li>
-                <li>Wheel studs and valve cover gaskets</li>
-              </ul>
-            </div>
-            <div class="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-900 p-5 text-white">
-              <h4 class="font-bold">Tyre Center</h4>
-              <ul class="mt-3 space-y-2 text-sm text-white/85">
-                <li>175/70 R13 for Corolla</li>
-                <li>185/70 R14 for Honda Fit</li>
-                <li>195/R14C for Hiace and AD Van</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-[28px] bg-slate-950 p-6 sm:p-8 text-white shadow-soft">
-          <p class="text-xs uppercase tracking-[0.25em] text-slate-400 font-bold">Online Orders</p>
-          <h3 class="mt-2 font-display text-3xl font-bold">Built for mobile checkout</h3>
-          <p class="mt-4 text-slate-300">
-            Customers can add items, fill in delivery details, and send the full order online through WhatsApp.
-          </p>
-
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-2xl bg-white/5 p-5">
-              <i class="fas fa-cart-shopping text-brand-400 text-2xl"></i>
-              <h4 class="mt-3 font-bold">Add to cart</h4>
-              <p class="mt-2 text-sm text-slate-400">Clear quantities and live totals on every device size.</p>
-            </div>
-            <div class="rounded-2xl bg-white/5 p-5">
-              <i class="fas fa-comments text-emerald-400 text-2xl"></i>
-              <h4 class="mt-3 font-bold">Send instantly</h4>
-              <p class="mt-2 text-sm text-slate-400">Order summary is prefilled into WhatsApp for quick confirmation.</p>
-            </div>
-            <div class="rounded-2xl bg-white/5 p-5">
-              <i class="fas fa-percent text-amber-400 text-2xl"></i>
-              <h4 class="mt-3 font-bold">Staff pricing</h4>
-              <p class="mt-2 text-sm text-slate-400">Increase or reduce all visible prices by percentage.</p>
-            </div>
-            <div class="rounded-2xl bg-white/5 p-5">
-              <i class="fas fa-mobile-screen-button text-sky-400 text-2xl"></i>
-              <h4 class="mt-3 font-bold">Mobile first</h4>
-              <p class="mt-2 text-sm text-slate-400">Touch-friendly cards, forms, drawers, and action buttons.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="cart-section" class="mt-14 grid xl:grid-cols-[1fr_360px] gap-6 items-start">
-        <div class="rounded-[28px] bg-white p-6 sm:p-8 shadow-soft">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-brand-600 font-bold">Order Desk</p>
-              <h3 class="mt-2 font-display text-3xl font-bold">Place an order online</h3>
-            </div>
-            <div class="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600">
-              <span id="cartCount">0</span> items
-            </div>
-          </div>
-
-          <div id="cartItems" class="mt-6 space-y-3"></div>
-
-          <div id="emptyCartState" class="mt-6 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
-            Add parts from the catalog to start an order.
-          </div>
-        </div>
-
-        <aside class="xl:sticky xl:top-24 rounded-[28px] bg-slate-950 p-6 text-white shadow-soft">
-          <h4 class="font-display text-2xl font-bold">Customer Details</h4>
-
-          <div class="mt-5 space-y-4">
-            <input id="customerName" type="text" placeholder="Customer full name" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-500" />
-            <input id="customerPhone" type="text" placeholder="Phone / WhatsApp number" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-500" />
-            <input id="customerLocation" type="text" placeholder="Pickup or delivery location" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-500" />
-            <textarea id="customerNotes" rows="4" placeholder="Vehicle model, year, notes..." class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-500"></textarea>
-          </div>
-
-          <div class="mt-6 rounded-2xl bg-white/5 p-5">
-            <div class="flex justify-between text-sm text-slate-300">
-              <span>Subtotal</span>
-              <span id="subtotalValue">$0.00</span>
-            </div>
-            <div class="mt-3 flex justify-between text-sm text-slate-300">
-              <span>Adjustment</span>
-              <span id="adjustmentValue">0%</span>
-            </div>
-            <div class="mt-4 border-t border-white/10 pt-4 flex justify-between text-lg font-bold">
-              <span>Total</span>
-              <span id="totalValue">$0.00</span>
-            </div>
-          </div>
-
-          <div class="mt-6 grid gap-3">
-            <a id="whatsappOrderBtn" href="#" target="_blank" class="rounded-2xl bg-emerald-500 px-5 py-4 text-center font-bold text-white transition hover:bg-emerald-600">
-              <i class="fab fa-whatsapp mr-2"></i>Send Order via WhatsApp
-            </a>
-            <button onclick="clearCart()" class="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 font-bold text-white transition hover:bg-white/10">
-              Clear Cart
-            </button>
-          </div>
-
-          <p class="mt-4 text-xs leading-6 text-slate-400">
-            For real production use, connect this front-end to a backend for secure staff login, saved orders, stock control, and payment processing.
-          </p>
-        </aside>
-      </section>
-    </div>
-
-    <div id="services-content" class="hidden-content mt-10">
-      <div class="grid gap-6 lg:grid-cols-2">
-        <div class="rounded-[28px] bg-white p-8 shadow-soft">
-          <div class="flex items-start gap-4">
-            <div class="rounded-2xl bg-sky-100 p-4 text-sky-600">
-              <i class="fas fa-microchip text-3xl"></i>
-            </div>
-            <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-sky-600 font-bold">Diagnostics</p>
-              <h2 class="mt-2 font-display text-3xl font-bold">OBD II Diagnostic Scanning</h2>
-              <p class="mt-4 text-slate-600 leading-7">
-                Identify engine faults, sensor issues, and warning light causes quickly with workshop-grade scan tools.
-              </p>
-              <a href="https://wa.me/16038170479?text=Hello%20Eastern%20Auto%20Spares,%20I%20would%20like%20to%20book%20an%20OBD%20II%20diagnostic%20scan." class="mt-6 inline-block rounded-2xl bg-sky-600 px-6 py-3 font-bold text-white hover:bg-sky-700">
-                Request Scan
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-[28px] bg-gradient-to-br from-amber-50 via-white to-orange-50 p-8 shadow-soft border border-amber-200">
-          <div class="flex items-start gap-4">
-            <div class="rounded-2xl bg-amber-100 p-4 text-amber-600">
-              <i class="fas fa-gem text-3xl"></i>
-            </div>
-            <div>
-              <p class="text-xs uppercase tracking-[0.25em] text-amber-600 font-bold">Rewards</p>
-              <h2 class="mt-2 font-display text-3xl font-bold">Loyalty Card Program</h2>
-              <p class="mt-4 text-slate-600 leading-7">
-                Returning customers can qualify for special service and selected parts discounts, including member-only price benefits.
-              </p>
-              <div class="mt-6 inline-flex rounded-full bg-amber-500 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white">
-                Coming Soon
-              </div>
+            <p id="sessionText" class="mt-3 text-sm leading-6 text-slate-300">
+              Browse parts, add items to cart, and log in to place orders online.
+            </p>
+            <div class="mt-4 text-xs text-slate-400 sm:text-sm">
+              Results:
+              <span id="resultCount" class="font-semibold text-white">0</span>
+              parts
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section id="catalog" class="mt-10">
+      <div class="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600 sm:text-[11px]">Inventory</div>
+          <h2 class="mt-1 font-display text-2xl font-bold text-slate-900 sm:text-3xl">Parts Catalog</h2>
+        </div>
+      </div>
+
+      <div id="productsGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+
+      <div id="emptyProductsState" class="hidden rounded-[24px] border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+        No parts matched your filters.
+      </div>
+    </section>
+
+    <section id="staffPanelSection" class="hidden mt-12">
+      <div class="rounded-[28px] bg-white p-5 shadow-lg sm:p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-orange-500 sm:text-[11px]">Staff Panel</div>
+            <h3 class="mt-1 font-display text-2xl font-bold sm:text-3xl">Add New Part</h3>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Create new inventory entries with auto-generated part IDs and proper category classification.
+            </p>
+          </div>
+        </div>
+
+        <form id="addPartForm" class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div>
+            <label class="text-sm font-medium text-slate-700">Part Name</label>
+            <input id="partName" type="text" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Front Brake Pad Set" />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Category</label>
+            <select id="partCategory" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
+              <option value="">Select Category</option>
+              <option>Brakes</option>
+              <option>Suspension</option>
+              <option>Electrical</option>
+              <option>Cooling</option>
+              <option>Engine</option>
+              <option>Fluids</option>
+              <option>Tools</option>
+              <option>Emergency</option>
+              <option>Tyres</option>
+              <option>Filters</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Vehicle</label>
+            <select id="partVehicle" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
+              <option value="">Select Vehicle</option>
+              <option>Universal</option>
+              <option>Toyota</option>
+              <option>Honda</option>
+              <option>Mazda</option>
+              <option>Nissan</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Price (USD)</label>
+            <input id="partPrice" type="number" min="0" step="0.01" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="38" />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Stock Status</label>
+            <select id="partStock" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
+              <option>In Stock</option>
+              <option>Low Stock</option>
+              <option>Order Ready</option>
+              <option>Out of Stock</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Image URL</label>
+            <input id="partImage" type="url" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="https://..." />
+          </div>
+
+          <div class="md:col-span-2 xl:col-span-3">
+            <label class="text-sm font-medium text-slate-700">Description</label>
+            <textarea id="partDescription" rows="3" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Short part description..."></textarea>
+          </div>
+
+          <div class="md:col-span-2 xl:col-span-3 flex flex-col gap-3 sm:flex-row">
+            <button type="submit" class="rounded-2xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+              Add Part
+            </button>
+            <div id="addPartStatus" class="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+              Staff actions appear here.
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="mt-12 grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div id="checkout" class="rounded-[28px] bg-white p-5 shadow-lg sm:p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-cyan-600 sm:text-[11px]">Checkout</div>
+            <h3 class="mt-1 font-display text-2xl font-bold sm:text-3xl">Your Cart</h3>
+          </div>
+          <div class="rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 sm:text-sm">
+            <span id="checkoutCartCount">0</span> items
+          </div>
+        </div>
+
+        <div id="cartItems" class="nice-scroll mt-5 space-y-3"></div>
+
+        <div id="emptyCartState" class="mt-5 rounded-[24px] border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+          Your cart is empty. Add a few parts to begin.
+        </div>
+      </div>
+
+      <aside class="rounded-[28px] bg-slate-950 p-5 text-white shadow-lg sm:p-6">
+        <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400 sm:text-[11px]">Order Details</div>
+        <h3 class="mt-1 font-display text-2xl font-bold">Place Order</h3>
+
+        <div class="mt-5 space-y-4">
+          <input id="customerName" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none placeholder:text-slate-500" placeholder="Customer full name" />
+          <input id="customerPhone" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none placeholder:text-slate-500" placeholder="Phone / WhatsApp number" />
+          <input id="customerLocation" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none placeholder:text-slate-500" placeholder="Pickup or delivery location" />
+          <textarea id="customerNotes" rows="4" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none placeholder:text-slate-500" placeholder="Vehicle model, year, notes..."></textarea>
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-white/5 p-4">
+          <div class="flex justify-between text-sm text-slate-300">
+            <span>Items</span>
+            <span id="summaryItems">0</span>
+          </div>
+          <div class="mt-3 flex justify-between text-sm text-slate-300">
+            <span>Total</span>
+            <span id="summaryTotal">$0.00</span>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-3">
+          <button id="placeOrderBtn" class="rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-500 to-orange-400 px-5 py-3 text-sm font-semibold text-white hover:opacity-95">
+            Submit Order Online
+          </button>
+          <button id="whatsAppBtn" class="rounded-2xl border border-white/10 bg-white/6 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10">
+            Send Via WhatsApp
+          </button>
+          <button id="clearCartBtn" class="rounded-2xl border border-white/10 bg-transparent px-5 py-3 text-sm font-semibold text-slate-300 hover:bg-white/5">
+            Clear Cart
+          </button>
+        </div>
+
+        <div id="orderStatus" class="mt-4 rounded-2xl bg-white/5 px-4 py-3 text-xs leading-6 text-slate-400 sm:text-sm">
+          Sign in to attach your account to orders. Guests can still prepare carts.
+        </div>
+      </aside>
+    </section>
   </main>
 
-  <footer class="mt-16 border-t border-slate-200 bg-white/80 backdrop-blur-md">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12 grid gap-8 md:grid-cols-3">
+  <footer class="border-t border-slate-200 bg-white/70 backdrop-blur-md">
+    <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
       <div>
-        <h4 class="font-display text-xl font-bold text-brand-600 uppercase">Eastern Auto Spares</h4>
-        <p class="mt-4 text-sm leading-7 text-slate-600">
-          Top-tier Japanese spare parts procurement and workshop support for Chipinge and the wider Manicaland region.
+        <div class="font-display text-lg font-bold uppercase text-blue-600">Eastern Auto Spares</div>
+        <p class="mt-3 text-sm leading-6 text-slate-600">
+          Professional Japanese spare parts procurement and support for workshops and retail customers in Chipinge and beyond.
         </p>
       </div>
       <div>
-        <h4 class="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Headquarters</h4>
-        <p class="mt-4 text-sm font-semibold text-slate-700">Chipinge Town, Zimbabwe</p>
-        <p class="mt-2 text-sm text-slate-500">Director: Samuel Takwirira</p>
+        <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:text-[11px]">Headquarters</div>
+        <p class="mt-3 text-sm text-slate-700">Chipinge Town, Zimbabwe</p>
+        <p class="mt-1 text-sm text-slate-500">Director: Samuel Takwirira</p>
       </div>
       <div>
-        <h4 class="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Digital Contact</h4>
-        <a href="mailto:info@easternautoparts.com" class="mt-4 block text-sm font-bold text-brand-600 underline">
-          info@easternautoparts.com
-        </a>
-        <a href="https://wa.me/16038170479" class="mt-2 block text-sm font-bold text-emerald-600">
-          +1 603 817 0479
-        </a>
+        <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:text-[11px]">Contact</div>
+        <a href="mailto:info@easternautoparts.com" class="mt-3 block text-sm font-semibold text-blue-600 underline">info@easternautoparts.com</a>
+        <a href="https://wa.me/16038170479" class="mt-1 block text-sm font-semibold text-emerald-600">+1 603 817 0479</a>
       </div>
     </div>
-    <div class="border-t border-slate-200 py-5 text-center text-[11px] uppercase tracking-[0.25em] text-slate-400">
+    <div class="border-t border-slate-200 py-4 text-center text-[10px] uppercase tracking-[0.25em] text-slate-400 sm:text-[11px]">
       © 2026 Eastern Auto Spares. All Rights Reserved.
     </div>
   </footer>
 
-  <div id="staffPanel" class="hidden fixed inset-0 z-[80] bg-slate-950/70 p-4 backdrop-blur-sm">
-    <div class="mx-auto mt-8 max-w-lg rounded-[28px] bg-white p-6 sm:p-8 shadow-soft">
-      <div class="flex items-start justify-between gap-4">
+  <div id="authModal" class="hidden fixed inset-0 z-[100] bg-slate-950/70 p-4 backdrop-blur-sm">
+    <div class="mx-auto mt-8 max-w-md rounded-[28px] bg-white p-5 shadow-2xl sm:mt-16 sm:p-6">
+      <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="text-xs uppercase tracking-[0.25em] text-amber-600 font-bold">Staff Console</p>
-          <h3 class="mt-2 font-display text-3xl font-bold">Adjust Prices by %</h3>
+          <div class="text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600 sm:text-[11px]">Account</div>
+          <h3 id="authModalTitle" class="mt-1 font-display text-2xl font-bold">Login</h3>
         </div>
-        <button onclick="toggleStaffPanel()" class="rounded-full bg-slate-100 h-11 w-11 text-slate-500 hover:text-slate-800">
-          <i class="fas fa-xmark"></i>
+        <button id="closeAuthBtn" class="h-10 w-10 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <div id="staffLoginBox" class="mt-6">
-        <label class="text-sm font-bold text-slate-700">Staff Passcode</label>
-        <input id="staffPasscode" type="password" placeholder="Enter staff code" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" />
-        <button onclick="unlockStaffMode()" class="mt-4 w-full rounded-2xl bg-slate-950 px-5 py-4 font-bold text-white hover:bg-slate-800">
-          Unlock Staff Mode
-        </button>
-        <p class="mt-3 text-xs text-slate-500">Demo code: <strong>EAS2026</strong></p>
+      <div class="mt-5 flex gap-2 rounded-full bg-slate-100 p-1">
+        <button id="loginTabBtn" class="active-tab flex-1 rounded-full px-4 py-2 text-sm font-semibold">Login</button>
+        <button id="signupTabBtn" class="flex-1 rounded-full px-4 py-2 text-sm font-semibold text-slate-600">Sign Up</button>
       </div>
 
-      <div id="staffControls" class="hidden mt-6">
-        <div class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
-          Staff mode is active. These controls affect the displayed retail prices for all parts.
+      <form id="authForm" class="mt-5 space-y-4">
+        <div id="nameFieldWrap" class="hidden">
+          <label class="text-sm font-medium text-slate-700">Full Name</label>
+          <input id="authName" type="text" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Samuel Takwirira" />
         </div>
 
-        <div class="mt-5">
-          <label class="text-sm font-bold text-slate-700">Adjustment Percentage</label>
-          <input id="staffPercent" type="number" value="10" min="1" max="90" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" />
+        <div>
+          <label class="text-sm font-medium text-slate-700">Email</label>
+          <input id="authEmail" type="email" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="you@example.com" />
         </div>
 
-        <div class="mt-5 grid sm:grid-cols-3 gap-3">
-          <button onclick="applyPriceChange('increase')" class="rounded-2xl bg-emerald-600 px-4 py-4 font-bold text-white hover:bg-emerald-700">
-            Increase
-          </button>
-          <button onclick="applyPriceChange('decrease')" class="rounded-2xl bg-brand-600 px-4 py-4 font-bold text-white hover:bg-brand-700">
-            Decrease
-          </button>
-          <button onclick="resetPriceChange()" class="rounded-2xl border border-slate-300 px-4 py-4 font-bold text-slate-700 hover:bg-slate-50">
-            Reset
-          </button>
+        <div>
+          <label class="text-sm font-medium text-slate-700">Password</label>
+          <input id="authPassword" type="password" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Minimum 6 characters" />
         </div>
 
-        <button onclick="lockStaffMode()" class="mt-4 w-full rounded-2xl bg-slate-950 px-4 py-4 font-bold text-white hover:bg-slate-800">
-          Lock Staff Mode
+        <button type="submit" id="authSubmitBtn" class="w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+          Login
+        </button>
+
+        <div id="authStatus" class="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+          Login or create an account to continue.
+        </div>
+      </form>
+
+      <div id="signedInPanel" class="hidden mt-5 rounded-[24px] bg-slate-950 p-5 text-white">
+        <div class="text-sm text-slate-300">Signed in as</div>
+        <div id="signedInUserText" class="mt-1 font-semibold"></div>
+        <button id="logoutBtn" class="mt-4 w-full rounded-2xl bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+          Logout
         </button>
       </div>
     </div>
   </div>
 
-  <script>
-    const WHATSAPP_NUMBER = "16038170479";
-    const STAFF_CODE = "EAS2026";
+  <script src="https://kit.fontawesome.com/7a0b8a8826.js" crossorigin="anonymous"></script>
 
-    let activeTab = "inventory";
-    let priceAdjustment = Number(localStorage.getItem("eas-price-adjustment") || 0);
-    let staffUnlocked = localStorage.getItem("eas-staff-mode") === "true";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      getDoc,
+      setDoc,
+      doc,
+      query,
+      orderBy,
+      serverTimestamp,
+      runTransaction
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDkRa5r_WkMFmDVsbt8beVyr44FS-uaNOw",
+      authDomain: "zimradinvest.firebaseapp.com",
+      projectId: "zimradinvest",
+      storageBucket: "zimradinvest.firebasestorage.app",
+      messagingSenderId: "729435016310",
+      appId: "1:729435016310:web:3efcf986edc24308faa357"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const els = {
+      searchInput: document.getElementById("searchInput"),
+      categoryFilter: document.getElementById("categoryFilter"),
+      vehicleFilter: document.getElementById("vehicleFilter"),
+      sortFilter: document.getElementById("sortFilter"),
+      productsGrid: document.getElementById("productsGrid"),
+      emptyProductsState: document.getElementById("emptyProductsState"),
+      resultCount: document.getElementById("resultCount"),
+      cartItems: document.getElementById("cartItems"),
+      emptyCartState: document.getElementById("emptyCartState"),
+      navCartCount: document.getElementById("navCartCount"),
+      navCartTotal: document.getElementById("navCartTotal"),
+      checkoutCartCount: document.getElementById("checkoutCartCount"),
+      summaryItems: document.getElementById("summaryItems"),
+      summaryTotal: document.getElementById("summaryTotal"),
+      clearCartBtn: document.getElementById("clearCartBtn"),
+      placeOrderBtn: document.getElementById("placeOrderBtn"),
+      whatsAppBtn: document.getElementById("whatsAppBtn"),
+      orderStatus: document.getElementById("orderStatus"),
+      customerName: document.getElementById("customerName"),
+      customerPhone: document.getElementById("customerPhone"),
+      customerLocation: document.getElementById("customerLocation"),
+      customerNotes: document.getElementById("customerNotes"),
+      openAuthBtn: document.getElementById("openAuthBtn"),
+      closeAuthBtn: document.getElementById("closeAuthBtn"),
+      authModal: document.getElementById("authModal"),
+      authForm: document.getElementById("authForm"),
+      authStatus: document.getElementById("authStatus"),
+      authModalTitle: document.getElementById("authModalTitle"),
+      authSubmitBtn: document.getElementById("authSubmitBtn"),
+      loginTabBtn: document.getElementById("loginTabBtn"),
+      signupTabBtn: document.getElementById("signupTabBtn"),
+      authName: document.getElementById("authName"),
+      authEmail: document.getElementById("authEmail"),
+      authPassword: document.getElementById("authPassword"),
+      nameFieldWrap: document.getElementById("nameFieldWrap"),
+      signedInPanel: document.getElementById("signedInPanel"),
+      signedInUserText: document.getElementById("signedInUserText"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      sessionTitle: document.getElementById("sessionTitle"),
+      sessionText: document.getElementById("sessionText"),
+      roleBadge: document.getElementById("roleBadge"),
+      authStateMini: document.getElementById("authStateMini"),
+      staffPanelSection: document.getElementById("staffPanelSection"),
+      addPartForm: document.getElementById("addPartForm"),
+      addPartStatus: document.getElementById("addPartStatus"),
+      partName: document.getElementById("partName"),
+      partCategory: document.getElementById("partCategory"),
+      partVehicle: document.getElementById("partVehicle"),
+      partPrice: document.getElementById("partPrice"),
+      partStock: document.getElementById("partStock"),
+      partImage: document.getElementById("partImage"),
+      partDescription: document.getElementById("partDescription"),
+      cartNavBtn: document.getElementById("cartNavBtn"),
+      heroPrice1: document.getElementById("heroPrice1"),
+      heroPrice2: document.getElementById("heroPrice2"),
+      heroPrice3: document.getElementById("heroPrice3")
+    };
+
+    let authMode = "login";
+    let currentUser = null;
+    let currentUserRole = "guest";
+    let parts = [];
     let cart = JSON.parse(localStorage.getItem("eas-cart") || "[]");
 
-    const products = [
-      { id: 1, name: "Blade Fuse Pack", category: "Electrical", vehicle: "Universal", price: 8, stock: "In Stock", icon: "fa-bolt", color: "from-yellow-400 to-orange-500" },
-      { id: 2, name: "Engine Oil 5L", category: "Fluids", vehicle: "Universal", price: 29, stock: "In Stock", icon: "fa-oil-can", color: "from-slate-700 to-slate-900" },
-      { id: 3, name: "2-Ton Hydraulic Jack", category: "Tools", vehicle: "Universal", price: 65, stock: "Ready", icon: "fa-screwdriver-wrench", color: "from-sky-500 to-slate-800" },
-      { id: 4, name: "Jumper Cables 600A", category: "Emergency", vehicle: "Universal", price: 24, stock: "In Stock", icon: "fa-car-battery", color: "from-red-500 to-orange-600" },
-      { id: 5, name: "Toyota Front Brake Pad Set", category: "Brakes", vehicle: "Toyota", price: 38, stock: "In Stock", icon: "fa-circle-stop", color: "from-brand-500 to-brand-700" },
-      { id: 6, name: "Oil Filter M20x1.5", category: "Engine", vehicle: "Toyota", price: 14, stock: "In Stock", icon: "fa-filter", color: "from-slate-600 to-slate-900" },
-      { id: 7, name: "Outer CV Joint 23-26 Spline", category: "Suspension", vehicle: "Toyota", price: 52, stock: "Limited", icon: "fa-gear", color: "from-indigo-500 to-slate-800" },
-      { id: 8, name: "Honda Fit Brake Pads", category: "Brakes", vehicle: "Honda", price: 36, stock: "In Stock", icon: "fa-circle-stop", color: "from-rose-500 to-red-700" },
-      { id: 9, name: "Ignition Coil", category: "Electrical", vehicle: "Honda", price: 41, stock: "In Stock", icon: "fa-plug-circle-bolt", color: "from-amber-500 to-red-600" },
-      { id: 10, name: "Shock Absorber Strut", category: "Suspension", vehicle: "Mazda", price: 72, stock: "In Stock", icon: "fa-arrows-up-down", color: "from-blue-500 to-slate-900" },
-      { id: 11, name: "Wheel Bearing 35x68x37", category: "Suspension", vehicle: "Mazda", price: 33, stock: "In Stock", icon: "fa-compact-disc", color: "from-cyan-500 to-blue-700" },
-      { id: 12, name: "Air Filter Panel 250x200", category: "Engine", vehicle: "Nissan", price: 16, stock: "In Stock", icon: "fa-wind", color: "from-emerald-500 to-slate-800" },
-      { id: 13, name: "Water Pump", category: "Cooling", vehicle: "Nissan", price: 49, stock: "In Stock", icon: "fa-droplet", color: "from-sky-500 to-cyan-700" },
-      { id: 14, name: "Hiace Fuel Filter", category: "Engine", vehicle: "Toyota", price: 18, stock: "In Stock", icon: "fa-filter-circle-dollar", color: "from-lime-500 to-emerald-700" },
-      { id: 15, name: "Aluminum Radiator", category: "Cooling", vehicle: "Toyota", price: 95, stock: "Order Ready", icon: "fa-fan", color: "from-slate-500 to-slate-900" },
-      { id: 16, name: "Spark Plug Set", category: "Electrical", vehicle: "Toyota", price: 22, stock: "In Stock", icon: "fa-bolt-lightning", color: "from-orange-500 to-amber-700" }
+    const demoParts = [
+      {
+        partId: "EAS-1001",
+        name: "Toyota Front Brake Pad Set",
+        category: "Brakes",
+        vehicle: "Toyota",
+        price: 38,
+        stock: "In Stock",
+        imageUrl: "",
+        description: "Reliable front brake pad set for Toyota models.",
+        createdAt: new Date()
+      },
+      {
+        partId: "EAS-1002",
+        name: "Engine Oil 5L",
+        category: "Fluids",
+        vehicle: "Universal",
+        price: 29,
+        stock: "In Stock",
+        imageUrl: "",
+        description: "High quality engine oil for everyday maintenance.",
+        createdAt: new Date()
+      },
+      {
+        partId: "EAS-1003",
+        name: "Outer CV Joint",
+        category: "Suspension",
+        vehicle: "Toyota",
+        price: 52,
+        stock: "Low Stock",
+        imageUrl: "",
+        description: "Durable outer CV joint assembly.",
+        createdAt: new Date()
+      },
+      {
+        partId: "EAS-1004",
+        name: "Ignition Coil",
+        category: "Electrical",
+        vehicle: "Honda",
+        price: 41,
+        stock: "In Stock",
+        imageUrl: "",
+        description: "High-performance ignition coil unit.",
+        createdAt: new Date()
+      },
+      {
+        partId: "EAS-1005",
+        name: "Water Pump",
+        category: "Cooling",
+        vehicle: "Nissan",
+        price: 49,
+        stock: "Order Ready",
+        imageUrl: "",
+        description: "Cooling system water pump for Nissan applications.",
+        createdAt: new Date()
+      },
+      {
+        partId: "EAS-1006",
+        name: "2-Ton Hydraulic Jack",
+        category: "Tools",
+        vehicle: "Universal",
+        price: 65,
+        stock: "In Stock",
+        imageUrl: "",
+        description: "Workshop-grade hydraulic jack.",
+        createdAt: new Date()
+      }
     ];
 
     function formatMoney(value) {
-      return `$${value.toFixed(2)}`;
+      return `$${Number(value || 0).toFixed(2)}`;
     }
 
-    function getAdjustedPrice(basePrice) {
-      return +(basePrice * (1 + priceAdjustment / 100)).toFixed(2);
+    function slugColor(category) {
+      const map = {
+        Brakes: "from-rose-500 to-red-700",
+        Suspension: "from-blue-500 to-indigo-700",
+        Electrical: "from-amber-400 to-orange-600",
+        Cooling: "from-cyan-500 to-sky-700",
+        Engine: "from-slate-600 to-slate-900",
+        Fluids: "from-emerald-500 to-green-700",
+        Tools: "from-violet-500 to-indigo-700",
+        Emergency: "from-red-500 to-orange-500",
+        Tyres: "from-zinc-600 to-zinc-900",
+        Filters: "from-lime-500 to-emerald-700"
+      };
+      return map[category] || "from-blue-500 to-orange-500";
     }
 
-    function showTab(tabName) {
-      activeTab = tabName;
-      const inv = document.getElementById("inventory-content");
-      const ser = document.getElementById("services-content");
-      const tabInv = document.getElementById("tab-inv");
-      const tabSer = document.getElementById("tab-ser");
+    function persistCart() {
+      localStorage.setItem("eas-cart", JSON.stringify(cart));
+    }
 
-      if (tabName === "inventory") {
-        inv.classList.remove("hidden-content");
-        ser.classList.add("hidden-content");
-        tabInv.classList.add("tab-active");
-        tabSer.classList.remove("tab-active");
-      } else {
-        inv.classList.add("hidden-content");
-        ser.classList.remove("hidden-content");
-        tabSer.classList.add("tab-active");
-        tabInv.classList.remove("tab-active");
+    function getCartCount() {
+      return cart.reduce((sum, item) => sum + item.qty, 0);
+    }
+
+    function getCartTotal() {
+      return cart.reduce((sum, item) => sum + Number(item.price) * item.qty, 0);
+    }
+
+    function scrollToCheckout() {
+      document.getElementById("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function openAuthModal() {
+      els.authModal.classList.remove("hidden");
+    }
+
+    function closeAuthModal() {
+      els.authModal.classList.add("hidden");
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const loginActive = mode === "login";
+
+      els.authModalTitle.textContent = loginActive ? "Login" : "Create Account";
+      els.authSubmitBtn.textContent = loginActive ? "Login" : "Create Account";
+      els.nameFieldWrap.classList.toggle("hidden", loginActive);
+
+      els.loginTabBtn.classList.toggle("active-tab", loginActive);
+      els.signupTabBtn.classList.toggle("active-tab", !loginActive);
+      els.loginTabBtn.classList.toggle("text-slate-600", !loginActive);
+      els.signupTabBtn.classList.toggle("text-slate-600", loginActive);
+    }
+
+    async function ensureUserDoc(user, name = "") {
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: name || user.displayName || "",
+          email: user.email || "",
+          role: "customer",
+          createdAt: serverTimestamp()
+        });
       }
     }
 
-    function renderProducts() {
-      const search = document.getElementById("searchInput").value.toLowerCase().trim();
-      const category = document.getElementById("categoryFilter").value;
-      const vehicle = document.getElementById("vehicleFilter").value;
-      const grid = document.getElementById("productsGrid");
-
-      const filtered = products.filter(product => {
-        const matchesSearch =
-          product.name.toLowerCase().includes(search) ||
-          product.category.toLowerCase().includes(search) ||
-          product.vehicle.toLowerCase().includes(search);
-
-        const matchesCategory = category === "all" || product.category === category;
-        const matchesVehicle = vehicle === "all" || product.vehicle === vehicle;
-
-        return matchesSearch && matchesCategory && matchesVehicle;
-      });
-
-      document.getElementById("resultCount").textContent = filtered.length;
-
-      grid.innerHTML = filtered.map(product => {
-        const adjustedPrice = getAdjustedPrice(product.price);
-        return `
-          <article class="part-card overflow-hidden rounded-[26px] bg-white shadow-soft transition duration-300">
-            <div class="h-44 bg-gradient-to-br ${product.color} flex items-center justify-center text-white">
-              <i class="fas ${product.icon} text-5xl opacity-95"></i>
-            </div>
-            <div class="p-5">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brand-700">${product.category}</span>
-                <span class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600">${product.vehicle}</span>
-              </div>
-
-              <h3 class="mt-4 text-xl font-bold text-slate-900">${product.name}</h3>
-              <p class="mt-2 text-sm text-slate-500">${product.stock}</p>
-
-              <div class="mt-5 flex items-end justify-between gap-4">
-                <div>
-                  <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Price</div>
-                  <div class="text-2xl font-display font-bold text-slate-900">${formatMoney(adjustedPrice)}</div>
-                </div>
-                <button onclick="addToCart(${product.id})" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-600">
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join("");
+    async function fetchUserRole(uid) {
+      const userRef = doc(db, "users", uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) return "customer";
+      return snap.data().role || "customer";
     }
 
-    function addToCart(productId) {
-      const product = products.find(item => item.id === productId);
-      const existing = cart.find(item => item.id === productId);
+    async function loadParts() {
+      try {
+        const q = query(collection(db, "parts"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
 
+        if (snapshot.empty) {
+          parts = [...demoParts];
+        } else {
+          parts = snapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+          }));
+        }
+      } catch (error) {
+        console.error(error);
+        parts = [...demoParts];
+      }
+
+      hydrateCategoryFilter();
+      renderProducts();
+      refreshHeroPrices();
+    }
+
+    function hydrateCategoryFilter() {
+      const categories = Array.from(new Set(parts.map(p => p.category).filter(Boolean))).sort();
+      els.categoryFilter.innerHTML = `<option value="all">All Categories</option>` +
+        categories.map(cat => `<option value="${cat}">${cat}</option>`).join("");
+    }
+
+    function renderProducts() {
+      const search = els.searchInput.value.trim().toLowerCase();
+      const category = els.categoryFilter.value;
+      const vehicle = els.vehicleFilter.value;
+      const sort = els.sortFilter.value;
+
+      let filtered = parts.filter(part => {
+        const hay = `${part.name || ""} ${part.partId || ""} ${part.category || ""} ${part.vehicle || ""} ${part.description || ""}`.toLowerCase();
+        const searchMatch = hay.includes(search);
+        const categoryMatch = category === "all" || part.category === category;
+        const vehicleMatch = vehicle === "all" || part.vehicle === vehicle;
+        return searchMatch && categoryMatch && vehicleMatch;
+      });
+
+      if (sort === "price-low") filtered.sort((a, b) => Number(a.price) - Number(b.price));
+      if (sort === "price-high") filtered.sort((a, b) => Number(b.price) - Number(a.price));
+      if (sort === "name") filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      if (sort === "featured") filtered.sort((a, b) => (a.partId || "").localeCompare(b.partId || ""));
+
+      els.resultCount.textContent = filtered.length;
+      els.emptyProductsState.classList.toggle("hidden", filtered.length > 0);
+
+      els.productsGrid.innerHTML = filtered.map(part => `
+        <article class="card-hover overflow-hidden rounded-[26px] bg-white shadow-md">
+          <div class="h-40 bg-gradient-to-br ${slugColor(part.category)} flex items-center justify-center">
+            ${
+              part.imageUrl
+                ? `<img src="${part.imageUrl}" alt="${part.name}" class="h-full w-full object-cover" />`
+                : `<div class="text-center text-white">
+                    <i class="fa-solid fa-gear text-4xl opacity-90"></i>
+                    <div class="mt-2 text-[10px] uppercase tracking-[0.25em] opacity-80">${part.category || "Part"}</div>
+                  </div>`
+            }
+          </div>
+
+          <div class="p-4 sm:p-5">
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-full bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 sm:text-[11px]">${part.category || "General"}</span>
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-[11px]">${part.vehicle || "Universal"}</span>
+            </div>
+
+            <div class="mt-3 flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-base font-semibold text-slate-900 sm:text-lg">${part.name || "Unnamed Part"}</h3>
+                <p class="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-400 sm:text-xs">${part.partId || "Auto ID"}</p>
+              </div>
+              <div class="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-[11px]">
+                ${part.stock || "In Stock"}
+              </div>
+            </div>
+
+            <p class="line-clamp-2 mt-3 text-sm leading-6 text-slate-500">
+              ${part.description || "Quality spare part available for ordering and workshop use."}
+            </p>
+
+            <div class="mt-5 flex items-end justify-between gap-4">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.16em] text-slate-400 sm:text-[11px]">Price</div>
+                <div class="font-display text-xl font-bold text-slate-900 sm:text-2xl">${formatMoney(part.price)}</div>
+              </div>
+              <button data-add-cart="${part.partId}" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-600">
+                Add
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      els.productsGrid.querySelectorAll("[data-add-cart]").forEach(btn => {
+        btn.addEventListener("click", () => addToCart(btn.dataset.addCart));
+      });
+    }
+
+    function refreshHeroPrices() {
+      const brake = parts.find(p => p.name?.toLowerCase().includes("brake"));
+      const oil = parts.find(p => p.name?.toLowerCase().includes("oil"));
+      const cv = parts.find(p => p.name?.toLowerCase().includes("cv"));
+
+      if (brake) els.heroPrice1.textContent = formatMoney(brake.price);
+      if (oil) els.heroPrice2.textContent = formatMoney(oil.price);
+      if (cv) els.heroPrice3.textContent = formatMoney(cv.price);
+    }
+
+    function addToCart(partId) {
+      const part = parts.find(p => p.partId === partId);
+      if (!part) return;
+
+      const existing = cart.find(item => item.partId === partId);
       if (existing) {
         existing.qty += 1;
       } else {
-        cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+        cart.push({
+          partId: part.partId,
+          name: part.name,
+          price: Number(part.price),
+          qty: 1
+        });
       }
 
       persistCart();
       renderCart();
     }
 
-    function changeQty(productId, delta) {
-      const item = cart.find(entry => entry.id === productId);
+    function changeQty(partId, delta) {
+      const item = cart.find(x => x.partId === partId);
       if (!item) return;
 
       item.qty += delta;
       if (item.qty <= 0) {
-        cart = cart.filter(entry => entry.id !== productId);
+        cart = cart.filter(x => x.partId !== partId);
       }
 
       persistCart();
@@ -641,154 +913,281 @@
       renderCart();
     }
 
-    function persistCart() {
-      localStorage.setItem("eas-cart", JSON.stringify(cart));
-    }
-
     function renderCart() {
-      const cartItems = document.getElementById("cartItems");
-      const emptyState = document.getElementById("emptyCartState");
-      const cartCount = document.getElementById("cartCount");
+      const count = getCartCount();
+      const total = getCartTotal();
 
-      cartCount.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
+      els.navCartCount.textContent = count;
+      els.navCartTotal.textContent = formatMoney(total);
+      els.checkoutCartCount.textContent = count;
+      els.summaryItems.textContent = count;
+      els.summaryTotal.textContent = formatMoney(total);
 
-      if (cart.length === 0) {
-        cartItems.innerHTML = "";
-        emptyState.classList.remove("hidden");
-      } else {
-        emptyState.classList.add("hidden");
-        cartItems.innerHTML = cart.map(item => {
-          const adjusted = getAdjustedPrice(item.price);
-          return `
-            <div class="rounded-2xl border border-slate-200 p-4">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <h4 class="font-bold text-slate-900">${item.name}</h4>
-                  <p class="mt-1 text-sm text-slate-500">${formatMoney(adjusted)} each</p>
-                </div>
-                <div class="text-right">
-                  <div class="font-bold text-slate-900">${formatMoney(adjusted * item.qty)}</div>
-                  <div class="mt-3 inline-flex items-center rounded-full border border-slate-200">
-                    <button onclick="changeQty(${item.id}, -1)" class="px-3 py-2 text-slate-600">-</button>
-                    <span class="px-3 py-2 text-sm font-bold">${item.qty}</span>
-                    <button onclick="changeQty(${item.id}, 1)" class="px-3 py-2 text-slate-600">+</button>
-                  </div>
-                </div>
+      els.emptyCartState.classList.toggle("hidden", cart.length > 0);
+
+      els.cartItems.innerHTML = cart.map(item => `
+        <div class="rounded-[22px] border border-slate-200 p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <h4 class="text-sm font-semibold text-slate-900 sm:text-base">${item.name}</h4>
+              <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">${item.partId}</p>
+              <p class="mt-2 text-sm text-slate-500">${formatMoney(item.price)} each</p>
+            </div>
+
+            <div class="text-right">
+              <div class="font-semibold text-slate-900">${formatMoney(item.price * item.qty)}</div>
+              <div class="mt-3 inline-flex items-center rounded-full border border-slate-200">
+                <button data-cart-minus="${item.partId}" class="px-3 py-2 text-slate-600">-</button>
+                <span class="px-3 py-2 text-sm font-semibold">${item.qty}</span>
+                <button data-cart-plus="${item.partId}" class="px-3 py-2 text-slate-600">+</button>
               </div>
             </div>
-          `;
-        }).join("");
-      }
+          </div>
+        </div>
+      `).join("");
 
-      updateTotals();
-      updateWhatsAppLink();
-    }
-
-    function updateTotals() {
-      const subtotal = cart.reduce((sum, item) => sum + getAdjustedPrice(item.price) * item.qty, 0);
-      document.getElementById("subtotalValue").textContent = formatMoney(subtotal);
-      document.getElementById("totalValue").textContent = formatMoney(subtotal);
-      document.getElementById("adjustmentValue").textContent = `${priceAdjustment}%`;
-      document.getElementById("adjustmentLabel").textContent = `${priceAdjustment}%`;
-
-      const pricingStatus = document.getElementById("pricingStatus");
-      const badge = document.getElementById("staffModeBadge");
-
-      if (priceAdjustment > 0) {
-        pricingStatus.textContent = "Raised Retail Pricing";
-      } else if (priceAdjustment < 0) {
-        pricingStatus.textContent = "Discounted Retail Pricing";
-      } else {
-        pricingStatus.textContent = "Standard Retail";
-      }
-
-      if (staffUnlocked) {
-        badge.classList.remove("hidden");
-      } else {
-        badge.classList.add("hidden");
-      }
-    }
-
-    function updateWhatsAppLink() {
-      const name = document.getElementById("customerName").value.trim();
-      const phone = document.getElementById("customerPhone").value.trim();
-      const location = document.getElementById("customerLocation").value.trim();
-      const notes = document.getElementById("customerNotes").value.trim();
-      const total = cart.reduce((sum, item) => sum + getAdjustedPrice(item.price) * item.qty, 0);
-
-      const lines = cart.length
-        ? cart.map(item => `- ${item.name} x${item.qty} = ${formatMoney(getAdjustedPrice(item.price) * item.qty)}`).join("\n")
-        : "No items selected yet";
-
-      const message = `Hello Eastern Auto Spares,%0A%0AI would like to place an order.%0A%0ACustomer: ${encodeURIComponent(name || "Not provided")}%0APhone: ${encodeURIComponent(phone || "Not provided")}%0ALocation: ${encodeURIComponent(location || "Not provided")}%0A%0AItems:%0A${encodeURIComponent(lines)}%0A%0APrice adjustment: ${encodeURIComponent(priceAdjustment + "%")}%0ATotal: ${encodeURIComponent(formatMoney(total))}%0A%0AVehicle / Notes:%0A${encodeURIComponent(notes || "None")}`;
-
-      document.getElementById("whatsappOrderBtn").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-    }
-
-    function toggleStaffPanel() {
-      document.getElementById("staffPanel").classList.toggle("hidden");
-      syncStaffView();
-    }
-
-    function unlockStaffMode() {
-      const code = document.getElementById("staffPasscode").value.trim();
-      if (code !== STAFF_CODE) {
-        alert("Incorrect staff passcode.");
-        return;
-      }
-      staffUnlocked = true;
-      localStorage.setItem("eas-staff-mode", "true");
-      syncStaffView();
-      updateTotals();
-    }
-
-    function lockStaffMode() {
-      staffUnlocked = false;
-      localStorage.setItem("eas-staff-mode", "false");
-      syncStaffView();
-      updateTotals();
-    }
-
-    function syncStaffView() {
-      document.getElementById("staffLoginBox").classList.toggle("hidden", staffUnlocked);
-      document.getElementById("staffControls").classList.toggle("hidden", !staffUnlocked);
-    }
-
-    function applyPriceChange(mode) {
-      if (!staffUnlocked) return;
-
-      const percent = Number(document.getElementById("staffPercent").value);
-      if (!percent || percent < 1 || percent > 90) {
-        alert("Enter a percentage between 1 and 90.");
-        return;
-      }
-
-      priceAdjustment = mode === "increase" ? percent : -percent;
-      localStorage.setItem("eas-price-adjustment", priceAdjustment);
-      renderProducts();
-      renderCart();
-    }
-
-    function resetPriceChange() {
-      if (!staffUnlocked) return;
-      priceAdjustment = 0;
-      localStorage.setItem("eas-price-adjustment", priceAdjustment);
-      renderProducts();
-      renderCart();
-    }
-
-    ["customerName", "customerPhone", "customerLocation", "customerNotes"].forEach(id => {
-      document.addEventListener("input", event => {
-        if (event.target && event.target.id === id) {
-          updateWhatsAppLink();
-        }
+      els.cartItems.querySelectorAll("[data-cart-minus]").forEach(btn => {
+        btn.addEventListener("click", () => changeQty(btn.dataset.cartMinus, -1));
       });
+
+      els.cartItems.querySelectorAll("[data-cart-plus]").forEach(btn => {
+        btn.addEventListener("click", () => changeQty(btn.dataset.cartPlus, 1));
+      });
+    }
+
+    async function handleAuthSubmit(event) {
+      event.preventDefault();
+      const email = els.authEmail.value.trim();
+      const password = els.authPassword.value.trim();
+      const name = els.authName.value.trim();
+
+      if (!email || !password) {
+        els.authStatus.textContent = "Email and password are required.";
+        return;
+      }
+
+      try {
+        if (authMode === "signup") {
+          if (!name) {
+            els.authStatus.textContent = "Full name is required for sign up.";
+            return;
+          }
+
+          const result = await createUserWithEmailAndPassword(auth, email, password);
+          await ensureUserDoc(result.user, name);
+          els.authStatus.textContent = "Account created successfully.";
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          els.authStatus.textContent = "Logged in successfully.";
+        }
+
+        els.authForm.reset();
+      } catch (error) {
+        els.authStatus.textContent = error.message;
+      }
+    }
+
+    async function handleOrderSubmit() {
+      const name = els.customerName.value.trim();
+      const phone = els.customerPhone.value.trim();
+      const location = els.customerLocation.value.trim();
+      const notes = els.customerNotes.value.trim();
+
+      if (cart.length === 0) {
+        els.orderStatus.textContent = "Add parts to the cart before placing an order.";
+        return;
+      }
+
+      if (!name || !phone) {
+        els.orderStatus.textContent = "Customer name and phone are required.";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "orders"), {
+          customerName: name,
+          customerPhone: phone,
+          customerLocation: location,
+          customerNotes: notes,
+          items: cart,
+          total: getCartTotal(),
+          itemCount: getCartCount(),
+          userId: currentUser?.uid || null,
+          userEmail: currentUser?.email || null,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+
+        els.orderStatus.textContent = "Order submitted successfully.";
+        clearCart();
+        els.customerNotes.value = "";
+      } catch (error) {
+        els.orderStatus.textContent = `Order failed: ${error.message}`;
+      }
+    }
+
+    function sendWhatsAppOrder() {
+      const name = els.customerName.value.trim() || "Not provided";
+      const phone = els.customerPhone.value.trim() || "Not provided";
+      const location = els.customerLocation.value.trim() || "Not provided";
+      const notes = els.customerNotes.value.trim() || "None";
+      const lines = cart.length
+        ? cart.map(item => `- ${item.name} x${item.qty} = ${formatMoney(item.price * item.qty)}`).join("\n")
+        : "No items selected";
+
+      const message = `Hello Eastern Auto Spares,
+
+I would like to place an order.
+
+Customer: ${name}
+Phone: ${phone}
+Location: ${location}
+
+Items:
+${lines}
+
+Total: ${formatMoney(getCartTotal())}
+
+Notes:
+${notes}`;
+
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/16038170479?text=${encoded}`, "_blank");
+    }
+
+    async function createPartWithAutoId(data) {
+      const counterRef = doc(db, "meta", "counters");
+      const partsRef = collection(db, "parts");
+
+      await runTransaction(db, async (transaction) => {
+        const counterSnap = await transaction.get(counterRef);
+        let current = 1000;
+
+        if (counterSnap.exists()) {
+          current = Number(counterSnap.data().partNumber || 1000);
+        }
+
+        const next = current + 1;
+        const generatedPartId = `EAS-${String(next).padStart(4, "0")}`;
+        const newPartRef = doc(partsRef);
+
+        transaction.set(counterRef, { partNumber: next }, { merge: true });
+        transaction.set(newPartRef, {
+          ...data,
+          partId: generatedPartId,
+          createdAt: serverTimestamp()
+        });
+      });
+    }
+
+    async function handleAddPart(event) {
+      event.preventDefault();
+
+      if (currentUserRole !== "staff") {
+        els.addPartStatus.textContent = "Only staff can add parts.";
+        return;
+      }
+
+      const data = {
+        name: els.partName.value.trim(),
+        category: els.partCategory.value,
+        vehicle: els.partVehicle.value,
+        price: Number(els.partPrice.value),
+        stock: els.partStock.value,
+        imageUrl: els.partImage.value.trim(),
+        description: els.partDescription.value.trim()
+      };
+
+      if (!data.name || !data.category || !data.vehicle || !data.price) {
+        els.addPartStatus.textContent = "Please fill in all required fields.";
+        return;
+      }
+
+      try {
+        await createPartWithAutoId(data);
+        els.addPartStatus.textContent = "Part added successfully with auto-generated ID.";
+        els.addPartForm.reset();
+        await loadParts();
+      } catch (error) {
+        els.addPartStatus.textContent = `Failed to add part: ${error.message}`;
+      }
+    }
+
+    function updateSessionUI() {
+      const isSignedIn = !!currentUser;
+      const isStaff = currentUserRole === "staff";
+
+      els.openAuthBtn.textContent = isSignedIn ? "Account" : "Login";
+      els.authStateMini.classList.toggle("hidden", !isSignedIn);
+      els.authStateMini.textContent = isSignedIn ? `${currentUser.email}` : "";
+
+      if (!isSignedIn) {
+        els.sessionTitle.textContent = "Guest Browsing";
+        els.sessionText.textContent = "Browse parts, add items to cart, and log in to place orders online.";
+      } else if (isStaff) {
+        els.sessionTitle.textContent = "Staff Session";
+        els.sessionText.textContent = "You can manage parts, classify inventory, and review the storefront as a live customer would.";
+      } else {
+        els.sessionTitle.textContent = "Customer Session";
+        els.sessionText.textContent = "Your account is active. You can now place orders with your signed-in identity.";
+      }
+
+      els.roleBadge.classList.toggle("hidden", !isStaff);
+      els.staffPanelSection.classList.toggle("hidden", !isStaff);
+
+      if (isSignedIn) {
+        els.signedInPanel.classList.remove("hidden");
+        els.signedInUserText.textContent = `${currentUser.email} • ${currentUserRole}`;
+      } else {
+        els.signedInPanel.classList.add("hidden");
+      }
+    }
+
+    function wireEvents() {
+      els.searchInput.addEventListener("input", renderProducts);
+      els.categoryFilter.addEventListener("change", renderProducts);
+      els.vehicleFilter.addEventListener("change", renderProducts);
+      els.sortFilter.addEventListener("change", renderProducts);
+
+      els.clearCartBtn.addEventListener("click", clearCart);
+      els.placeOrderBtn.addEventListener("click", handleOrderSubmit);
+      els.whatsAppBtn.addEventListener("click", sendWhatsAppOrder);
+      els.addPartForm.addEventListener("submit", handleAddPart);
+
+      els.openAuthBtn.addEventListener("click", openAuthModal);
+      els.closeAuthBtn.addEventListener("click", closeAuthModal);
+      els.loginTabBtn.addEventListener("click", () => setAuthMode("login"));
+      els.signupTabBtn.addEventListener("click", () => setAuthMode("signup"));
+      els.authForm.addEventListener("submit", handleAuthSubmit);
+      els.logoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+        closeAuthModal();
+      });
+
+      els.cartNavBtn.addEventListener("click", scrollToCheckout);
+
+      els.authModal.addEventListener("click", (event) => {
+        if (event.target === els.authModal) closeAuthModal();
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if (user) {
+        await ensureUserDoc(user);
+        currentUserRole = await fetchUserRole(user.uid);
+      } else {
+        currentUserRole = "guest";
+      }
+
+      updateSessionUI();
     });
 
-    renderProducts();
+    wireEvents();
+    setAuthMode("login");
     renderCart();
-    updateTotals();
-    syncStaffView();
+    loadParts();
   </script>
 </body>
 </html>
