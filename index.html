@@ -618,6 +618,7 @@
     let cart = JSON.parse(localStorage.getItem("eas-cart") || "[]");
 
     const authErrorMessages = {
+      "auth/configuration-not-found": "Firebase Authentication is not fully configured for this project yet. In Firebase Console, open Authentication and finish setup, then enable Email/Password sign-in.",
       "auth/email-already-in-use": "That email already has an account. Try logging in instead.",
       "auth/invalid-email": "Enter a valid email address.",
       "auth/invalid-credential": "The email or password is incorrect.",
