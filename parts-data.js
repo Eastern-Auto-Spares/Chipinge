@@ -7,11 +7,102 @@ export const listedModels = [
   "Toyota Hiace"
 ];
 
+const PREFIX_RULES = [
+  { match: /air filter/i, prefix: "AF" },
+  { match: /oil filter/i, prefix: "OF" },
+  { match: /engine oil|motor oil/i, prefix: "OL" },
+  { match: /brake fluid/i, prefix: "BF" },
+  { match: /brake pad/i, prefix: "BP" },
+  { match: /brake disc|rotor/i, prefix: "BD" },
+  { match: /brake shoe/i, prefix: "BS" },
+  { match: /brake cleaner/i, prefix: "BC" },
+  { match: /coolant/i, prefix: "CL" },
+  { match: /water pump/i, prefix: "WP" },
+  { match: /cooling fan/i, prefix: "CF" },
+  { match: /cv boot/i, prefix: "CB" },
+  { match: /cv grease/i, prefix: "CG" },
+  { match: /cv joint/i, prefix: "CJ" },
+  { match: /tripod/i, prefix: "TP" },
+  { match: /spark plug/i, prefix: "SP" },
+  { match: /ignition coil/i, prefix: "IC" },
+  { match: /fuel pump/i, prefix: "FP" },
+  { match: /fuel filter/i, prefix: "FF" },
+  { match: /battery water/i, prefix: "BW" },
+  { match: /battery terminal/i, prefix: "BT" },
+  { match: /blade fuse|fuse pack/i, prefix: "FU" },
+  { match: /jumper cable/i, prefix: "JC" },
+  { match: /hydraulic jack|car jack/i, prefix: "JK" },
+  { match: /shock absorber/i, prefix: "SA" },
+  { match: /wheel bearing/i, prefix: "WB" },
+  { match: /wheel nut/i, prefix: "WN" },
+  { match: /wheel stud/i, prefix: "WS" },
+  { match: /tyre valve/i, prefix: "TV" },
+  { match: /tyre/i, prefix: "TY" },
+  { match: /radiator/i, prefix: "RD" },
+  { match: /engine mount/i, prefix: "EM" },
+  { match: /valve cover gasket/i, prefix: "VG" },
+  { match: /starter motor/i, prefix: "SM" },
+  { match: /alternator/i, prefix: "AL" },
+  { match: /clutch kit/i, prefix: "CK" },
+  { match: /power steering fluid/i, prefix: "PS" },
+  { match: /atf fluid/i, prefix: "AT" },
+  { match: /hose clamp/i, prefix: "HC" },
+  { match: /cable tie/i, prefix: "CT" },
+  { match: /screwdriver/i, prefix: "SD" },
+  { match: /spanner/i, prefix: "SN" },
+  { match: /engine cleaner/i, prefix: "EC" },
+  { match: /ball joint/i, prefix: "BJ" },
+  { match: /tie rod/i, prefix: "TR" },
+  { match: /drive belt|v-belt/i, prefix: "DB" },
+  { match: /grease/i, prefix: "GR" }
+];
+
 function inferStockLabel(stockQty) {
   if (stockQty >= 20) return "In Stock";
   if (stockQty >= 6) return "Low Stock";
   if (stockQty >= 1) return "Order Ready";
   return "Out of Stock";
+}
+
+function getPartPrefix(name = "", category = "") {
+  const source = `${name} ${category}`.trim();
+  const matchedRule = PREFIX_RULES.find((rule) => rule.match.test(source));
+  if (matchedRule) return matchedRule.prefix;
+
+  const words = source
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word && !["TOYOTA", "HONDA", "MAZDA", "NISSAN", "UNIVERSAL"].includes(word));
+
+  if (words.length >= 2) return `${words[0][0]}${words[1][0]}`;
+  if (words.length === 1) return `${words[0][0]}${words[0][1] || "X"}`;
+  return "PT";
+}
+
+function hashToDigits(value = "") {
+  const input = String(value || "AES");
+  let hash = 0;
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) % 100000;
+  }
+
+  return String(hash).padStart(5, "0");
+}
+
+export function buildReadablePartId(name, category, barcode = "", existingIds = []) {
+  const prefix = getPartPrefix(name, category);
+  const baseDigits = Number(hashToDigits(`${prefix}-${barcode || name}-${category}`));
+  const taken = new Set(existingIds.filter((id) => String(id).startsWith(prefix)));
+
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const candidateDigits = String((baseDigits + attempt) % 100000).padStart(5, "0");
+    const candidate = `${prefix}${candidateDigits}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+
+  return `${prefix}${hashToDigits(`${Date.now()}-${name}`)}`;
 }
 
 function createSeedPart({
@@ -25,8 +116,12 @@ function createSeedPart({
   imageUrl = "",
   price = null
 }) {
+  const readableId = partId && !String(partId).startsWith("EAS-")
+    ? partId
+    : buildReadablePartId(name, category, barcode);
+
   return {
-    partId,
+    partId: readableId,
     name,
     category,
     vehicles,

@@ -21,7 +21,7 @@ import {
   serverTimestamp,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import { demoParts, getCategoryGradient, getVehicleOptions, inferStockState } from "./parts-data.js";
+import { buildReadablePartId, demoParts, getCategoryGradient, getVehicleOptions, inferStockState } from "./parts-data.js";
 import { runEasternAISearch } from "./easternai.js";
 
 const firebaseConfig = {
@@ -84,11 +84,17 @@ const els = {
   signedInPanel: document.getElementById("signedInPanel"),
   signedInUserText: document.getElementById("signedInUserText"),
   logoutBtn: document.getElementById("logoutBtn"),
+  openReviewsBtn: document.getElementById("openReviewsBtn"),
+  closeReviewsBtn: document.getElementById("closeReviewsBtn"),
+  reviewsModal: document.getElementById("reviewsModal"),
+  reviewsList: document.getElementById("reviewsList"),
   sessionTitle: document.getElementById("sessionTitle"),
   sessionText: document.getElementById("sessionText"),
   roleBadge: document.getElementById("roleBadge"),
   authStateMini: document.getElementById("authStateMini"),
   staffPanelSection: document.getElementById("staffPanelSection"),
+  directorPanel: document.getElementById("directorPanel"),
+  directorActivityBody: document.getElementById("directorActivityBody"),
   addPartForm: document.getElementById("addPartForm"),
   addPartStatus: document.getElementById("addPartStatus"),
   partName: document.getElementById("partName"),
@@ -113,20 +119,56 @@ const els = {
   aiSearchBadge: document.getElementById("aiSearchBadge"),
   aiSummary: document.getElementById("aiSummary"),
   aiTopMatches: document.getElementById("aiTopMatches"),
-  aiSuggestions: document.getElementById("aiSuggestions")
+  aiSuggestions: document.getElementById("aiSuggestions"),
+  aiChatMessages: document.getElementById("aiChatMessages"),
+  aiChatForm: document.getElementById("aiChatForm"),
+  aiChatInput: document.getElementById("aiChatInput"),
+  aiChatSendBtn: document.getElementById("aiChatSendBtn"),
+  aiChatStatus: document.getElementById("aiChatStatus")
 };
 
 let authMode = "login";
 let currentUser = null;
+let currentUserProfile = null;
 let currentUserRole = "guest";
 let parts = [];
 let cart = JSON.parse(localStorage.getItem("eas-cart") || "[]");
 let activeSearchTerm = "";
 let activeAppTab = "shop";
+let aiChatHistory = [];
+let lastSearchResult = { results: [] };
 
 const LOCAL_PARTS_KEY = "eas-local-parts";
 const STAFF_CODE = "AES26";
-const STAFF_SESSION_KEY = "eas-staff-session";
+const DIRECTOR_CODE = "EASD26";
+const ACCESS_ROLE_KEY = "eas-access-role";
+const ACTIVITY_LOG_KEY = "eas-activity-log";
+const PAY_AUTH_KEY = "eas-pay-authorization";
+const REVIEWS_STORAGE_KEY = "eas-public-reviews";
+
+const defaultReviews = [
+  {
+    name: "Tapiwa M.",
+    location: "Chipinge",
+    title: "Fast help when we needed it most",
+    body: "We found the brake parts quickly on the phone and the WhatsApp order flow was simple.",
+    rating: 5
+  },
+  {
+    name: "Ruth K.",
+    location: "Mutare",
+    title: "Easy to search by vehicle",
+    body: "Searching for Honda Fit parts felt much clearer than most spare parts sites.",
+    rating: 5
+  },
+  {
+    name: "Farai G.",
+    location: "Chipinge",
+    title: "Helpful stock guidance",
+    body: "The availability indicators and car matching made it easy to ask for the right item.",
+    rating: 4
+  }
+];
 
 const authErrorMessages = {
   "auth/configuration-not-found": "Secure account setup is not finished yet. Please complete the sign-in configuration in the admin console.",
@@ -212,7 +254,7 @@ function formatMoney(value) {
 }
 
 function formatPriceLabel(value) {
-  return value && Number(value) > 0 ? formatMoney(value) : "Quote";
+  return value && Number(value) > 0 ? formatMoney(value) : "--";
 }
 
 function formatVehicleList(vehicles = []) {
@@ -234,10 +276,129 @@ function shortenEmail(email) {
   return `${local.slice(0, 10)}...@${domain}`;
 }
 
+function getStoredJson(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "null");
+    return value ?? fallback;
+  } catch (error) {
+    console.warn(`Stored data could not be parsed for ${key}.`, error);
+    return fallback;
+  }
+}
+
+function saveStoredJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getUserDisplayName() {
+  const rawName = currentUserProfile?.firstName || currentUserProfile?.name || currentUser?.displayName || currentUser?.email || "Account";
+  return getFirstName(rawName);
+}
+
+function getAccountModeLabel(role = currentUserRole) {
+  if (role === "director") return "Director";
+  if (role === "staff") return "Team";
+  if (role === "customer") return "Rewards";
+  return "Guest";
+}
+
+function readReviews() {
+  const reviews = getStoredJson(REVIEWS_STORAGE_KEY, defaultReviews);
+  return Array.isArray(reviews) && reviews.length ? reviews : defaultReviews;
+}
+
+function renderReviews() {
+  const reviews = readReviews();
+  els.reviewsList.innerHTML = reviews
+    .map((review) => {
+      const stars = "★".repeat(review.rating || 5);
+      return `
+        <article class="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="font-semibold text-slate-900">${review.title}</div>
+              <div class="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">${review.name} • ${review.location}</div>
+            </div>
+            <div class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-500">${stars}</div>
+          </div>
+          <p class="mt-3 text-sm leading-6 text-slate-600">${review.body}</p>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function openReviewsModal() {
+  renderReviews();
+  els.reviewsModal.classList.remove("hidden");
+}
+
+function closeReviewsModal() {
+  els.reviewsModal.classList.add("hidden");
+}
+
 function getStockSignal(stock) {
   if (stock === "In Stock") return { dot: "bg-emerald-500", label: "Available", text: "text-emerald-600" };
   if (stock === "Low Stock" || stock === "Order Ready") return { dot: "bg-amber-400", label: "Low Stock", text: "text-amber-600" };
   return { dot: "bg-rose-500", label: "Out of Stock", text: "text-rose-600" };
+}
+
+function setAIChatStatus(text) {
+  els.aiChatStatus.textContent = text;
+}
+
+function renderAIChatMessages() {
+  els.aiChatMessages.innerHTML = aiChatHistory
+    .map((entry) => {
+      const assistant = entry.role === "assistant";
+      return `
+        <div class="flex ${assistant ? "justify-start" : "justify-end"}">
+          <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+            assistant
+              ? "bg-white/10 text-slate-100"
+              : "bg-gradient-to-r from-blue-500 via-cyan-500 to-orange-400 text-slate-950"
+          }">
+            ${entry.content}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  els.aiChatMessages.scrollTop = els.aiChatMessages.scrollHeight;
+}
+
+function pushAIChatMessage(role, content) {
+  aiChatHistory.push({ role, content });
+  aiChatHistory = aiChatHistory.slice(-12);
+  renderAIChatMessages();
+}
+
+async function askEasternAI(message) {
+  const uiContext = {
+    activeTab: activeAppTab,
+    searchTerm: activeSearchTerm,
+    category: els.categoryFilter.value,
+    vehicle: els.vehicleFilter.value,
+    topMatches: (lastSearchResult.results || []).slice(0, 5).map((part) => `${part.name} (${formatVehicleList(part.vehicles)})`)
+  };
+
+  const response = await fetch("/api/easternai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message,
+      history: aiChatHistory.slice(-8),
+      uiContext
+    })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.detail || data.error || "EasternAI request failed.");
+  }
+
+  return data.reply || "EasternAI could not produce a reply.";
 }
 
 function persistCart() {
@@ -300,15 +461,23 @@ function setAuthMode(mode) {
 }
 
 function syncAuthFields() {
-  const isStaffLogin = authMode === "login" && els.authAccountType.value === "staff";
-  els.staffCodeWrap.classList.toggle("hidden", !isStaffLogin);
+  const needsAccessCode = authMode === "login" && ["staff", "director"].includes(els.authAccountType.value);
+  els.staffCodeWrap.classList.toggle("hidden", !needsAccessCode);
 }
 
 function setActiveTab(tabId) {
-  if (tabId === "staff" && currentUserRole !== "staff") {
-    openAuthModal();
-    els.authStatus.textContent = "Staff access needs a staff login and the current staff code.";
-    return;
+  if (tabId === "staff") {
+    if (!currentUser) {
+      openAuthModal();
+      els.authStatus.textContent = "Use Account for rewards, team access, or director tools.";
+      return;
+    }
+
+    if (!["staff", "director"].includes(currentUserRole)) {
+      openAuthModal();
+      els.authStatus.textContent = "Stock tools are reserved for team and director accounts.";
+      return;
+    }
   }
 
   activeAppTab = tabId;
@@ -355,7 +524,7 @@ async function ensureUserDoc(user, name = "", role = "customer") {
 
   if (!snap.exists()) {
     await setDoc(userRef, payload);
-  } else if (role === "staff" || name) {
+  } else if (role === "staff" || role === "director" || name) {
     await setDoc(userRef, payload, { merge: true });
   }
 }
@@ -365,6 +534,12 @@ async function fetchUserRole(uid) {
   const snap = await getDoc(userRef);
   if (!snap.exists()) return "customer";
   return snap.data().role || "customer";
+}
+
+async function fetchUserProfile(uid) {
+  const userRef = doc(db, "users", uid);
+  const snap = await getDoc(userRef);
+  return snap.exists() ? snap.data() : null;
 }
 
 function hydrateCategoryFilter() {
@@ -407,7 +582,7 @@ function renderEasternAI(searchResult) {
                   <div class="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">${part.partId} • ${part.category}</div>
                 </div>
                 <div class="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-300">
-                  Score ${part.aiScore}
+                  ${part.stock}
                 </div>
               </div>
               <div class="mt-3 flex flex-wrap gap-2">
@@ -458,6 +633,7 @@ function renderProducts(searchResult) {
     .map(
       (part) => {
         const stockSignal = getStockSignal(part.stock);
+        const hasPublicPrice = Number(part.price) > 0;
         return `
         <article class="card-hover grid gap-3 px-4 py-4 sm:px-5 lg:grid-cols-[1.35fr_0.9fr_1.2fr_110px_110px_120px] lg:items-center">
           <div class="min-w-0">
@@ -511,9 +687,15 @@ function renderProducts(searchResult) {
           </div>
 
           <div class="flex justify-start lg:justify-end">
-            <button data-add-cart="${part.partId}" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600">
-              Add
-            </button>
+            ${
+              hasPublicPrice
+                ? `<button data-add-cart="${part.partId}" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600">
+                    Add
+                  </button>`
+                : `<button data-ask-price="${part.partId}" class="rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-500 to-orange-400 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95">
+                    Ask Price
+                  </button>`
+            }
           </div>
         </article>
       `;
@@ -523,6 +705,10 @@ function renderProducts(searchResult) {
 
   els.productsGrid.querySelectorAll("[data-add-cart]").forEach((button) => {
     button.addEventListener("click", () => addToCart(button.dataset.addCart));
+  });
+
+  els.productsGrid.querySelectorAll("[data-ask-price]").forEach((button) => {
+    button.addEventListener("click", () => requestPartPrice(button.dataset.askPrice));
   });
 }
 
@@ -561,8 +747,13 @@ function performSearch(options = {}) {
     vehicle: els.vehicleFilter.value
   });
 
+  lastSearchResult = searchResult;
   renderProducts(searchResult);
   renderEasternAI(searchResult);
+
+  if (["staff", "director"].includes(currentUserRole) && activeSearchTerm) {
+    logActivity("Search", `looked up "${activeSearchTerm}"`);
+  }
 }
 
 function refreshHeroPrices() {
@@ -593,6 +784,22 @@ function addToCart(partId) {
 
   persistCart();
   renderCart();
+}
+
+function requestPartPrice(partId) {
+  const part = parts.find((item) => item.partId === partId);
+  if (!part) return;
+
+  const message = encodeURIComponent(`Hello Eastern Auto Spares,
+
+Please share the current price for:
+- ${part.name}
+- Code: ${part.partId}
+- Fits: ${formatVehicleList(part.vehicles)}
+
+Thank you.`);
+
+  window.open(`https://wa.me/16038170479?text=${message}`, "_blank");
 }
 
 function changeQty(partId, delta) {
@@ -634,7 +841,7 @@ function renderCart() {
             <div class="min-w-0">
               <h4 class="text-sm font-semibold text-slate-900 sm:text-base">${item.name}</h4>
               <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">${item.partId}</p>
-              <p class="mt-2 text-sm text-slate-500">${item.price > 0 ? `${formatMoney(item.price)} each` : "Quoted at checkout"}</p>
+              <p class="mt-2 text-sm text-slate-500">${item.price > 0 ? `${formatMoney(item.price)} each` : "Price shared on request"}</p>
             </div>
 
             <div class="text-right">
@@ -666,8 +873,8 @@ async function handleAuthSubmit(event) {
   const password = els.authPassword.value.trim();
   const name = els.authName.value.trim();
   const accountType = els.authAccountType.value;
-  const isStaffLogin = authMode === "login" && accountType === "staff";
-  const staffCode = els.staffCodeInput.value.trim();
+  const isPrivilegedLogin = authMode === "login" && ["staff", "director"].includes(accountType);
+  const accessCode = els.staffCodeInput.value.trim();
 
   if (!email || !password) {
     els.authStatus.textContent = "Email and password are required.";
@@ -686,22 +893,34 @@ async function handleAuthSubmit(event) {
 
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await ensureUserDoc(result.user, name, "customer");
-      sessionStorage.removeItem(STAFF_SESSION_KEY);
+      sessionStorage.setItem(ACCESS_ROLE_KEY, "customer");
       els.authStatus.textContent = "Account created successfully. You are now signed in.";
     } else {
-      if (isStaffLogin && staffCode !== STAFF_CODE) {
-        els.authStatus.textContent = "Staff access requires the correct staff code.";
+      if (accountType === "staff" && accessCode !== STAFF_CODE) {
+        els.authStatus.textContent = "Team access requires the correct access code.";
+        return;
+      }
+
+      if (accountType === "director" && accessCode !== DIRECTOR_CODE) {
+        els.authStatus.textContent = "Director access requires the correct director code.";
         return;
       }
 
       const result = await signInWithEmailAndPassword(auth, email, password);
-      await ensureUserDoc(result.user, "", isStaffLogin ? "staff" : "customer");
-      if (isStaffLogin) {
-        sessionStorage.setItem(STAFF_SESSION_KEY, "true");
-      } else {
-        sessionStorage.removeItem(STAFF_SESSION_KEY);
-      }
-      els.authStatus.textContent = isStaffLogin ? "Staff login successful." : "Logged in successfully.";
+      const signedInRole = isPrivilegedLogin ? accountType : "customer";
+      await ensureUserDoc(result.user, "", signedInRole);
+      sessionStorage.setItem(ACCESS_ROLE_KEY, signedInRole);
+      logActivity("Login", `signed in as ${signedInRole}`, {
+        email: result.user.email || email,
+        name: result.user.displayName || name || getFirstName(result.user.email || email),
+        role: signedInRole
+      });
+      els.authStatus.textContent =
+        signedInRole === "director"
+          ? "Director login successful."
+          : signedInRole === "staff"
+            ? "Team login successful."
+            : "Logged in successfully.";
     }
 
     els.authForm.reset();
@@ -784,20 +1003,11 @@ ${notes}`;
 }
 
 async function createPartWithAutoId(data) {
-  const counterRef = doc(db, "meta", "counters");
   const partsRef = collection(db, "parts");
+  const generatedPartId = buildReadablePartId(data.name, data.category, data.barcode, parts.map((part) => part.partId));
   let createdPart = null;
 
   await runTransaction(db, async (transaction) => {
-    const counterSnap = await transaction.get(counterRef);
-    let current = 2000;
-
-    if (counterSnap.exists()) {
-      current = Number(counterSnap.data().partNumber || 2000);
-    }
-
-    const next = current + 1;
-    const generatedPartId = `EAS-${String(next).padStart(4, "0")}`;
     const newPartRef = doc(partsRef);
 
     createdPart = normalizePart({
@@ -806,7 +1016,6 @@ async function createPartWithAutoId(data) {
       createdAt: new Date()
     });
 
-    transaction.set(counterRef, { partNumber: next }, { merge: true });
     transaction.set(newPartRef, {
       ...createdPart,
       createdAt: serverTimestamp()
@@ -819,13 +1028,16 @@ async function createPartWithAutoId(data) {
 function createDeskPartFromForm() {
   const vehicles = normalizeVehicles(els.partVehicle.value);
   const stockQty = Number(els.partQty.value);
+  const barcode = els.partBarcode.value.trim() || `AES-${Date.now()}`;
+  const partId = buildReadablePartId(els.partName.value.trim(), els.partCategory.value, barcode, parts.map((part) => part.partId));
 
   return normalizePart({
     name: els.partName.value.trim(),
     category: els.partCategory.value,
     vehicles,
     stockQty,
-    barcode: els.partBarcode.value.trim() || `EAS-${Date.now()}`,
+    barcode,
+    partId,
     price: normalizePrice(els.partPrice.value),
     imageUrl: els.partImage.value.trim(),
     description: els.partDescription.value.trim() || `${els.partName.value.trim()} stocked for ${formatVehicleList(vehicles)}.`,
@@ -836,8 +1048,8 @@ function createDeskPartFromForm() {
 async function handleAddPart(event) {
   event.preventDefault();
 
-  if (currentUserRole !== "staff") {
-    els.addPartStatus.textContent = "Only staff can add parts.";
+  if (!["staff", "director"].includes(currentUserRole)) {
+    els.addPartStatus.textContent = "Only approved team accounts can add parts.";
     return;
   }
 
@@ -852,10 +1064,12 @@ async function handleAddPart(event) {
     const createdPart = await createPartWithAutoId(partData);
     parts = mergeParts(parts, [createdPart]);
     els.addPartStatus.textContent = "Stock line saved to live inventory.";
+    logActivity("Inventory", `saved ${createdPart.name} as ${createdPart.partId}`);
   } catch (error) {
     saveLocalPart(partData);
     parts = mergeParts(parts, [partData]);
     els.addPartStatus.textContent = "Live save failed, so the stock line was saved locally on this device.";
+    logActivity("Inventory", `saved ${partData.name} locally as ${partData.partId}`);
   }
 
   els.addPartForm.reset();
@@ -867,34 +1081,180 @@ async function handleAddPart(event) {
   closeStockDeskModal();
 }
 
+async function handleAIChatSubmit(event) {
+  event.preventDefault();
+  const message = els.aiChatInput.value.trim();
+  if (!message) return;
+
+  pushAIChatMessage("user", message);
+  els.aiChatInput.value = "";
+  els.aiChatSendBtn.disabled = true;
+  setAIChatStatus("EasternAI is thinking...");
+
+  try {
+    const reply = await askEasternAI(message);
+    pushAIChatMessage("assistant", reply);
+    setAIChatStatus("EasternAI is ready for the next question.");
+  } catch (error) {
+    pushAIChatMessage(
+      "assistant",
+      "EasternAI could not reach the secure AI service. Start the local server and make sure the Groq key is configured in .env.local."
+    );
+    setAIChatStatus(error.message);
+  } finally {
+    els.aiChatSendBtn.disabled = false;
+  }
+}
+
 function updateSessionUI() {
   const isSignedIn = !!currentUser;
   const isStaff = currentUserRole === "staff";
-  const profileName = getFirstName(currentUser?.displayName || currentUser?.email || "Account");
+  const isDirector = currentUserRole === "director";
+  const hasBackOfficeAccess = isStaff || isDirector;
+  const profileName = getUserDisplayName();
 
-  els.openAuthBtn.textContent = isSignedIn ? "Account" : "Staff / Rewards";
+  els.openAuthBtn.textContent = "Account";
   els.authStateMini.classList.toggle("hidden", !isSignedIn);
-  els.authStateMini.textContent = isSignedIn ? `${profileName} • ${shortenEmail(currentUser.email)}` : "";
+  els.authStateMini.innerHTML = isSignedIn
+    ? `<span class="font-display text-sm font-bold text-white">${profileName}</span><span class="mx-1 text-slate-500">•</span><span>${shortenEmail(currentUser.email)}</span>`
+    : "";
   els.signupTabBtn.classList.toggle("hidden", isSignedIn);
 
   if (!isSignedIn) {
     els.sessionTitle.textContent = "Guest Browsing";
     els.sessionText.textContent = "Browse parts on your phone, search with EasternAI, and place orders fast when a car breaks down.";
     els.orderStatus.textContent = "Sign in to attach your account to orders. Guests can still prepare carts.";
+  } else if (isDirector) {
+    els.sessionTitle.textContent = "Director Session";
+    els.sessionText.textContent = "Director controls are active. Review employee activity, authorize pay, and oversee stock operations.";
+    els.orderStatus.textContent = "Director account linked. Oversight tools are available in Account.";
   } else if (isStaff) {
-    els.sessionTitle.textContent = "Staff Session";
+    els.sessionTitle.textContent = "Team Session";
     els.sessionText.textContent = "Desktop stock tools are unlocked. Review inventory, scan barcodes, and keep the customer storefront current.";
-    els.orderStatus.textContent = "Staff account linked. Orders will include your signed-in identity.";
+    els.orderStatus.textContent = "Team account linked. Orders will include your signed-in identity.";
   } else {
     els.sessionTitle.textContent = "Customer Session";
     els.sessionText.textContent = "Your account is active. You can now place orders with your signed-in identity.";
     els.orderStatus.textContent = "Signed in successfully. Your orders will be linked to your account.";
   }
 
-  els.roleBadge.classList.toggle("hidden", !isStaff);
-  els.staffPanelSection.classList.toggle("hidden", !isStaff);
-  els.signedInUserText.textContent = isSignedIn ? `${profileName} • ${shortenEmail(currentUser.email)} • ${currentUserRole}` : "";
+  els.roleBadge.classList.toggle("hidden", !hasBackOfficeAccess);
+  els.roleBadge.textContent = isDirector ? "Director" : "Team";
+  els.staffPanelSection.classList.toggle("hidden", !hasBackOfficeAccess);
+  els.directorPanel.classList.toggle("hidden", !isDirector);
+  els.signedInUserText.textContent = isSignedIn ? `${profileName} • ${shortenEmail(currentUser.email)} • ${getAccountModeLabel()}` : "";
+  renderDirectorActivity();
   updateAuthPanelVisibility();
+}
+
+function readActivityLog() {
+  const entries = getStoredJson(ACTIVITY_LOG_KEY, []);
+  return Array.isArray(entries) ? entries : [];
+}
+
+function saveActivityLog(entries) {
+  saveStoredJson(ACTIVITY_LOG_KEY, entries.slice(0, 80));
+}
+
+function logActivity(action, details, overrides = {}) {
+  if (!currentUser && !overrides.email) return;
+
+  const entries = readActivityLog();
+  entries.unshift({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    action,
+    details,
+    name: overrides.name || getUserDisplayName(),
+    email: overrides.email || currentUser?.email || "unknown@easternauto.local",
+    role: overrides.role || currentUserRole,
+    userId: overrides.userId || currentUser?.uid || "local-user",
+    createdAt: new Date().toISOString()
+  });
+  saveActivityLog(entries);
+}
+
+function readPayAuthorizations() {
+  const records = getStoredJson(PAY_AUTH_KEY, {});
+  return records && typeof records === "object" ? records : {};
+}
+
+function authorizePay(email) {
+  const records = readPayAuthorizations();
+  records[email] = {
+    authorizedAt: new Date().toISOString(),
+    authorizedBy: currentUser?.email || "director"
+  };
+  saveStoredJson(PAY_AUTH_KEY, records);
+  logActivity("Payroll", `authorized pay for ${email}`);
+  renderDirectorActivity();
+}
+
+function renderDirectorActivity() {
+  if (currentUserRole !== "director") {
+    els.directorActivityBody.innerHTML = "";
+    return;
+  }
+
+  const logEntries = readActivityLog().filter((entry) => entry.role === "staff");
+  const payAuthorizations = readPayAuthorizations();
+  const byEmployee = new Map();
+
+  logEntries.forEach((entry) => {
+    const existing = byEmployee.get(entry.email) || {
+      name: entry.name,
+      email: entry.email,
+      lastSeen: entry.createdAt,
+      recentActions: []
+    };
+    existing.name = entry.name || existing.name;
+    existing.lastSeen = existing.lastSeen > entry.createdAt ? existing.lastSeen : entry.createdAt;
+    if (existing.recentActions.length < 4) {
+      existing.recentActions.push(`${entry.action}: ${entry.details}`);
+    }
+    byEmployee.set(entry.email, existing);
+  });
+
+  const employees = [...byEmployee.values()].sort((left, right) => right.lastSeen.localeCompare(left.lastSeen));
+
+  els.directorActivityBody.innerHTML = employees.length
+    ? employees
+        .map((employee) => {
+          const payState = payAuthorizations[employee.email];
+          return `
+            <article class="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900">${employee.name || "Unnamed employee"}</div>
+                  <div class="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">${employee.email}</div>
+                  <div class="mt-3 text-sm text-slate-500">Last activity: ${new Date(employee.lastSeen).toLocaleString()}</div>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    ${employee.recentActions
+                      .map(
+                        (action) => `
+                          <span class="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">${action}</span>
+                        `
+                      )
+                      .join("")}
+                  </div>
+                </div>
+                <div class="shrink-0">
+                  <button data-authorize-pay="${employee.email}" class="rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-500 to-orange-400 px-4 py-3 text-sm font-semibold text-white hover:opacity-95">
+                    ${payState ? "Pay Authorized" : "Authorize Pay"}
+                  </button>
+                  <div class="mt-2 text-xs text-slate-400">
+                    ${payState ? `Authorized ${new Date(payState.authorizedAt).toLocaleString()}` : "Awaiting authorization"}
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : `<div class="rounded-[22px] border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500">No employee activity has been recorded on this device yet.</div>`;
+
+  els.directorActivityBody.querySelectorAll("[data-authorize-pay]").forEach((button) => {
+    button.addEventListener("click", () => authorizePay(button.dataset.authorizePay));
+  });
 }
 
 function wireEvents() {
@@ -917,12 +1277,16 @@ function wireEvents() {
 
   els.openAuthBtn.addEventListener("click", openAuthModal);
   els.closeAuthBtn.addEventListener("click", closeAuthModal);
+  els.openReviewsBtn.addEventListener("click", openReviewsModal);
+  els.closeReviewsBtn.addEventListener("click", closeReviewsModal);
   els.loginTabBtn.addEventListener("click", () => setAuthMode("login"));
   els.signupTabBtn.addEventListener("click", () => setAuthMode("signup"));
   els.authAccountType.addEventListener("change", syncAuthFields);
   els.authForm.addEventListener("submit", handleAuthSubmit);
+  els.aiChatForm.addEventListener("submit", handleAIChatSubmit);
   els.logoutBtn.addEventListener("click", async () => {
-    sessionStorage.removeItem(STAFF_SESSION_KEY);
+    logActivity("Logout", "signed out");
+    sessionStorage.removeItem(ACCESS_ROLE_KEY);
     await signOut(auth);
     closeAuthModal();
   });
@@ -947,6 +1311,9 @@ function wireEvents() {
   });
   els.authModal.addEventListener("click", (event) => {
     if (event.target === els.authModal) closeAuthModal();
+  });
+  els.reviewsModal.addEventListener("click", (event) => {
+    if (event.target === els.reviewsModal) closeReviewsModal();
   });
 }
 
@@ -979,11 +1346,14 @@ onAuthStateChanged(auth, async (user) => {
 
   if (user) {
     await ensureUserDoc(user);
+    currentUserProfile = await fetchUserProfile(user.uid);
     currentUserRole = await fetchUserRole(user.uid);
-    if (currentUserRole === "staff" && sessionStorage.getItem(STAFF_SESSION_KEY) !== "true") {
+    const privilegedSession = sessionStorage.getItem(ACCESS_ROLE_KEY);
+    if (["staff", "director"].includes(currentUserRole) && privilegedSession !== currentUserRole) {
       currentUserRole = "customer";
     }
   } else {
+    currentUserProfile = null;
     currentUserRole = "guest";
   }
 
@@ -994,5 +1364,9 @@ initializeAuthPersistence();
 wireEvents();
 setAuthMode("login");
 setActiveTab("shop");
+pushAIChatMessage(
+  "assistant",
+  "EasternAI is online in guided mode. Ask about parts, compatible vehicles, barcode workflows, customer rewards, or team stock operations."
+);
 renderCart();
 loadParts();
