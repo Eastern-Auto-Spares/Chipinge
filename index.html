@@ -406,13 +406,14 @@
         </div>
 
         <div class="mt-6 overflow-hidden rounded-[24px] border border-slate-200">
-          <div class="hidden bg-slate-950 px-5 py-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300 lg:grid lg:grid-cols-[1.1fr_0.9fr_0.9fr_90px_140px_130px]">
+          <div class="hidden bg-slate-950 px-5 py-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300 lg:grid lg:grid-cols-[1.1fr_0.9fr_0.9fr_90px_140px_130px_120px]">
             <span>Part</span>
             <span>Category</span>
             <span>Vehicles</span>
             <span>Qty</span>
             <span>Barcode</span>
             <span>Status</span>
+            <span>Action</span>
           </div>
           <div id="stockTableBody" class="divide-y divide-slate-200"></div>
         </div>
@@ -582,10 +583,25 @@
         </div>
       </form>
 
-      <div id="signedInPanel" class="hidden mt-5 rounded-[24px] bg-slate-950 p-5 text-white">
-        <div class="text-sm text-slate-300">Signed in as</div>
-        <div id="signedInUserText" class="mt-1 font-semibold"></div>
-        <button id="logoutBtn" class="mt-4 w-full rounded-2xl bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+      <div id="signedInPanel" class="hidden mt-5 rounded-[28px] bg-slate-950 p-5 text-white shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div id="signedInRoleText" class="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300">Account Active</div>
+            <div id="signedInNameText" class="mt-3 font-display text-3xl font-bold leading-none text-white">Samuel</div>
+          </div>
+          <button id="toggleSignedInDetailsBtn" class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/15" type="button" aria-label="Show account details">
+            <i class="fa-solid fa-circle-user text-xl"></i>
+          </button>
+        </div>
+        <div id="signedInEmailWrap" class="hidden mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+          <div class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Email</div>
+          <div id="signedInEmailText" class="mt-2 font-semibold"></div>
+        </div>
+        <div id="signedInUserText" class="mt-4 text-sm text-slate-300"></div>
+        <button id="openBackOfficeBtn" class="hidden mt-4 w-full rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-500 to-orange-400 px-5 py-3 text-sm font-semibold text-white hover:opacity-95">
+          Open Control Room
+        </button>
+        <button id="logoutBtn" class="mt-3 w-full rounded-2xl bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
           Logout
         </button>
       </div>
@@ -630,10 +646,40 @@
           </select>
         </div>
 
-        <div class="lg:col-span-2">
-          <label class="text-sm font-medium text-slate-700">Compatible Vehicles</label>
-          <input id="partVehicle" type="text" required class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Universal, Toyota Corolla, Honda Fit" />
-        </div>
+        <fieldset class="lg:col-span-2">
+          <legend class="text-sm font-medium text-slate-700">Compatible Vehicles</legend>
+          <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Universal" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Universal
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Toyota Corolla" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Toyota Corolla
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Honda Fit" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Honda Fit
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Mazda Demio" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Mazda Demio
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Nissan AD Van" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Nissan AD Van
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Toyota Wish" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Toyota Wish
+            </label>
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" name="partVehicleOption" value="Toyota Hiace" class="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-500" />
+              Toyota Hiace
+            </label>
+          </div>
+          <div class="mt-2 text-xs text-slate-500">Choose Universal or select the exact vehicles this part fits.</div>
+        </fieldset>
 
         <div>
           <label class="text-sm font-medium text-slate-700">Stock Quantity</label>

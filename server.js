@@ -41,8 +41,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Eastern Auto Spares server running on http://localhost:${PORT}`);
+server.listen(PORT, "127.0.0.1", () => {
+  console.log(`Eastern Auto Spares server running on http://127.0.0.1:${PORT}`);
 });
 
 async function handleEasternAIRequest(body) {

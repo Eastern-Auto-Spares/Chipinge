@@ -12,6 +12,7 @@ import {
   getFirestore,
   collection,
   addDoc,
+  deleteDoc,
   getDocs,
   getDoc,
   setDoc,
@@ -82,6 +83,12 @@ const els = {
   staffCodeInput: document.getElementById("staffCodeInput"),
   nameFieldWrap: document.getElementById("nameFieldWrap"),
   signedInPanel: document.getElementById("signedInPanel"),
+  signedInRoleText: document.getElementById("signedInRoleText"),
+  signedInNameText: document.getElementById("signedInNameText"),
+  signedInEmailWrap: document.getElementById("signedInEmailWrap"),
+  signedInEmailText: document.getElementById("signedInEmailText"),
+  toggleSignedInDetailsBtn: document.getElementById("toggleSignedInDetailsBtn"),
+  openBackOfficeBtn: document.getElementById("openBackOfficeBtn"),
   signedInUserText: document.getElementById("signedInUserText"),
   logoutBtn: document.getElementById("logoutBtn"),
   openReviewsBtn: document.getElementById("openReviewsBtn"),
@@ -111,6 +118,7 @@ const els = {
   stockTableBody: document.getElementById("stockTableBody"),
   stockTableCount: document.getElementById("stockTableCount"),
   cartNavBtn: document.getElementById("cartNavBtn"),
+  cartTabBtn: document.querySelector('[data-app-tab="cart"]'),
   heroPrice1: document.getElementById("heroPrice1"),
   heroPrice2: document.getElementById("heroPrice2"),
   heroPrice3: document.getElementById("heroPrice3"),
@@ -145,6 +153,7 @@ const ACCESS_ROLE_KEY = "eas-access-role";
 const ACTIVITY_LOG_KEY = "eas-activity-log";
 const PAY_AUTH_KEY = "eas-pay-authorization";
 const REVIEWS_STORAGE_KEY = "eas-public-reviews";
+const DELETED_PARTS_KEY = "eas-deleted-parts";
 
 const defaultReviews = [
   {
@@ -290,6 +299,16 @@ function saveStoredJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function getSelectedVehicleOptions() {
+  return [...document.querySelectorAll('input[name="partVehicleOption"]:checked')].map((input) => input.value);
+}
+
+function clearSelectedVehicleOptions() {
+  document.querySelectorAll('input[name="partVehicleOption"]').forEach((input) => {
+    input.checked = false;
+  });
+}
+
 function getUserDisplayName() {
   const rawName = currentUserProfile?.firstName || currentUserProfile?.name || currentUser?.displayName || currentUser?.email || "Account";
   return getFirstName(rawName);
@@ -431,6 +450,14 @@ function openAuthModal() {
   els.authModal.classList.remove("hidden");
 }
 
+function openAccountSurface() {
+  if (["staff", "director"].includes(currentUserRole)) {
+    setActiveTab("staff");
+    return;
+  }
+  openAuthModal();
+}
+
 function closeAuthModal() {
   els.authModal.classList.add("hidden");
 }
@@ -495,6 +522,17 @@ function setActiveTab(tabId) {
   els.appPanels.forEach((panel) => {
     panel.classList.toggle("hidden", panel.dataset.appPanel !== tabId);
   });
+}
+
+function getDeletedPartKeys() {
+  const keys = getStoredJson(DELETED_PARTS_KEY, []);
+  return Array.isArray(keys) ? new Set(keys) : new Set();
+}
+
+function storeDeletedPartKey(part) {
+  const keys = getDeletedPartKeys();
+  keys.add(getPartKey(part));
+  saveStoredJson(DELETED_PARTS_KEY, [...keys]);
 }
 
 function getReadableAuthError(error) {
@@ -634,6 +672,7 @@ function renderProducts(searchResult) {
       (part) => {
         const stockSignal = getStockSignal(part.stock);
         const hasPublicPrice = Number(part.price) > 0;
+        const isDirector = currentUserRole === "director";
         return `
         <article class="card-hover grid gap-3 px-4 py-4 sm:px-5 lg:grid-cols-[1.35fr_0.9fr_1.2fr_110px_110px_120px] lg:items-center">
           <div class="min-w-0">
@@ -688,7 +727,11 @@ function renderProducts(searchResult) {
 
           <div class="flex justify-start lg:justify-end">
             ${
-              hasPublicPrice
+              isDirector
+                ? `<button data-manage-part="${part.partId}" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">
+                    Manage
+                  </button>`
+                : hasPublicPrice
                 ? `<button data-add-cart="${part.partId}" class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600">
                     Add
                   </button>`
@@ -710,16 +753,21 @@ function renderProducts(searchResult) {
   els.productsGrid.querySelectorAll("[data-ask-price]").forEach((button) => {
     button.addEventListener("click", () => requestPartPrice(button.dataset.askPrice));
   });
+
+  els.productsGrid.querySelectorAll("[data-manage-part]").forEach((button) => {
+    button.addEventListener("click", () => setActiveTab("staff"));
+  });
 }
 
 function renderStockTable() {
   const sortedParts = [...parts].sort((left, right) => (right.stockQty || 0) - (left.stockQty || 0));
   els.stockTableCount.textContent = sortedParts.length;
+  const isDirector = currentUserRole === "director";
 
   els.stockTableBody.innerHTML = sortedParts
     .map(
       (part) => `
-        <div class="grid gap-2 px-4 py-4 text-sm text-slate-700 lg:grid-cols-[1.1fr_0.9fr_0.9fr_90px_140px_130px] lg:items-center lg:px-5">
+        <div class="grid gap-2 px-4 py-4 text-sm text-slate-700 lg:grid-cols-[1.1fr_0.9fr_0.9fr_90px_140px_130px_120px] lg:items-center lg:px-5">
           <div>
             <div class="font-semibold text-slate-900">${part.name}</div>
             <div class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">${part.partId}</div>
@@ -731,10 +779,21 @@ function renderStockTable() {
           <div>
             <span class="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-700">${part.stock}</span>
           </div>
+          <div>
+            ${
+              isDirector
+                ? `<button data-delete-part="${getPartKey(part)}" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-rose-600 hover:bg-rose-100">Delete</button>`
+                : `<span class="text-xs uppercase tracking-[0.14em] text-slate-400">View</span>`
+            }
+          </div>
         </div>
       `
     )
     .join("");
+
+  els.stockTableBody.querySelectorAll("[data-delete-part]").forEach((button) => {
+    button.addEventListener("click", () => handleDeletePart(button.dataset.deletePart));
+  });
 }
 
 function performSearch(options = {}) {
@@ -800,6 +859,36 @@ Please share the current price for:
 Thank you.`);
 
   window.open(`https://wa.me/16038170479?text=${message}`, "_blank");
+}
+
+function buildLocalEasternAIReply(message) {
+  const query = String(message || "").trim();
+  const localSearch = runEasternAISearch(query, parts, {
+    category: els.categoryFilter.value,
+    vehicle: els.vehicleFilter.value
+  });
+  const topMatches = localSearch.topResults.slice(0, 3);
+  const lower = query.toLowerCase();
+
+  if (lower.includes("director")) {
+    return "Director access opens the Account control room. From there you can review employee activity, authorize pay, add stock, and delete inventory lines.";
+  }
+
+  if (lower.includes("delete")) {
+    return "A director can remove an item from the Account stock table by using the Delete action on that inventory row.";
+  }
+
+  if (lower.includes("barcode")) {
+    return "Use the stock desk barcode field in Account. A scanner can type straight into that input, then the new stock line becomes searchable on the site.";
+  }
+
+  if (!topMatches.length) {
+    return "I could not find a direct catalog match from the current website data. Try a simpler part name, a vehicle model, or a category like brakes, cooling, oil, or filters.";
+  }
+
+  return `From the current catalog, the strongest matches are ${topMatches
+    .map((part) => `${part.name} for ${formatVehicleList(part.vehicles)} (${part.stock.toLowerCase()}${part.price ? `, ${formatMoney(part.price)}` : ", price on request"})`)
+    .join("; ")}.`;
 }
 
 function changeQty(partId, delta) {
@@ -1026,7 +1115,7 @@ async function createPartWithAutoId(data) {
 }
 
 function createDeskPartFromForm() {
-  const vehicles = normalizeVehicles(els.partVehicle.value);
+  const vehicles = normalizeVehicles(getSelectedVehicleOptions());
   const stockQty = Number(els.partQty.value);
   const barcode = els.partBarcode.value.trim() || `AES-${Date.now()}`;
   const partId = buildReadablePartId(els.partName.value.trim(), els.partCategory.value, barcode, parts.map((part) => part.partId));
@@ -1055,7 +1144,7 @@ async function handleAddPart(event) {
 
   const partData = createDeskPartFromForm();
 
-  if (!partData.name || !partData.category || !partData.stockQty) {
+  if (!partData.name || !partData.category || !partData.stockQty || !partData.vehicles.length) {
     els.addPartStatus.textContent = "Part name, category, compatible vehicles, and stock quantity are required.";
     return;
   }
@@ -1073,6 +1162,7 @@ async function handleAddPart(event) {
   }
 
   els.addPartForm.reset();
+  clearSelectedVehicleOptions();
   hydrateCategoryFilter();
   hydrateVehicleFilter();
   renderStockTable();
@@ -1096,11 +1186,8 @@ async function handleAIChatSubmit(event) {
     pushAIChatMessage("assistant", reply);
     setAIChatStatus("EasternAI is ready for the next question.");
   } catch (error) {
-    pushAIChatMessage(
-      "assistant",
-      "EasternAI could not reach the secure AI service. Start the local server and make sure the Groq key is configured in .env.local."
-    );
-    setAIChatStatus(error.message);
+    pushAIChatMessage("assistant", buildLocalEasternAIReply(message));
+    setAIChatStatus("EasternAI is using local knowledge mode while the secure AI service is offline.");
   } finally {
     els.aiChatSendBtn.disabled = false;
   }
@@ -1112,6 +1199,7 @@ function updateSessionUI() {
   const isDirector = currentUserRole === "director";
   const hasBackOfficeAccess = isStaff || isDirector;
   const profileName = getUserDisplayName();
+  const fullName = currentUserProfile?.name || currentUser?.displayName || profileName;
 
   els.openAuthBtn.textContent = "Account";
   els.authStateMini.classList.toggle("hidden", !isSignedIn);
@@ -1119,6 +1207,12 @@ function updateSessionUI() {
     ? `<span class="font-display text-sm font-bold text-white">${profileName}</span><span class="mx-1 text-slate-500">•</span><span>${shortenEmail(currentUser.email)}</span>`
     : "";
   els.signupTabBtn.classList.toggle("hidden", isSignedIn);
+  els.signedInRoleText.textContent = isDirector ? "Director Control" : isStaff ? "Team Access" : "Rewards Active";
+  els.signedInNameText.textContent = fullName;
+  els.signedInEmailText.textContent = currentUser?.email || "";
+  els.openBackOfficeBtn.classList.toggle("hidden", !hasBackOfficeAccess);
+  els.cartNavBtn.classList.toggle("hidden", isDirector);
+  els.cartTabBtn?.classList.toggle("hidden", isDirector);
 
   if (!isSignedIn) {
     els.sessionTitle.textContent = "Guest Browsing";
@@ -1128,6 +1222,7 @@ function updateSessionUI() {
     els.sessionTitle.textContent = "Director Session";
     els.sessionText.textContent = "Director controls are active. Review employee activity, authorize pay, and oversee stock operations.";
     els.orderStatus.textContent = "Director account linked. Oversight tools are available in Account.";
+    if (activeAppTab === "cart") setActiveTab("staff");
   } else if (isStaff) {
     els.sessionTitle.textContent = "Team Session";
     els.sessionText.textContent = "Desktop stock tools are unlocked. Review inventory, scan barcodes, and keep the customer storefront current.";
@@ -1142,9 +1237,14 @@ function updateSessionUI() {
   els.roleBadge.textContent = isDirector ? "Director" : "Team";
   els.staffPanelSection.classList.toggle("hidden", !hasBackOfficeAccess);
   els.directorPanel.classList.toggle("hidden", !isDirector);
-  els.signedInUserText.textContent = isSignedIn ? `${profileName} • ${shortenEmail(currentUser.email)} • ${getAccountModeLabel()}` : "";
+  els.signedInUserText.textContent = isSignedIn
+    ? isDirector
+      ? "Behind-the-scenes control is active. Use the control room for inventory, team activity, and payroll authorization."
+      : `${getAccountModeLabel()} account ready.`
+    : "";
   renderDirectorActivity();
   updateAuthPanelVisibility();
+  renderStockTable();
 }
 
 function readActivityLog() {
@@ -1187,6 +1287,29 @@ function authorizePay(email) {
   saveStoredJson(PAY_AUTH_KEY, records);
   logActivity("Payroll", `authorized pay for ${email}`);
   renderDirectorActivity();
+}
+
+async function handleDeletePart(partKey) {
+  if (currentUserRole !== "director") return;
+
+  const target = parts.find((part) => getPartKey(part) === partKey || part.partId === partKey);
+  if (!target) return;
+
+  try {
+    if (target.id) {
+      await deleteDoc(doc(db, "parts", target.id));
+    }
+  } catch (error) {
+    console.warn("Live delete failed, keeping local delete only.", error);
+  }
+
+  storeDeletedPartKey(target);
+  parts = parts.filter((part) => getPartKey(part) !== getPartKey(target));
+  logActivity("Inventory", `deleted ${target.name} (${target.partId})`);
+  renderStockTable();
+  hydrateCategoryFilter();
+  hydrateVehicleFilter();
+  performSearch({ preserveExistingTerm: true });
 }
 
 function renderDirectorActivity() {
@@ -1275,7 +1398,7 @@ function wireEvents() {
   els.whatsAppBtn.addEventListener("click", sendWhatsAppOrder);
   els.addPartForm.addEventListener("submit", handleAddPart);
 
-  els.openAuthBtn.addEventListener("click", openAuthModal);
+  els.openAuthBtn.addEventListener("click", openAccountSurface);
   els.closeAuthBtn.addEventListener("click", closeAuthModal);
   els.openReviewsBtn.addEventListener("click", openReviewsModal);
   els.closeReviewsBtn.addEventListener("click", closeReviewsModal);
@@ -1284,6 +1407,13 @@ function wireEvents() {
   els.authAccountType.addEventListener("change", syncAuthFields);
   els.authForm.addEventListener("submit", handleAuthSubmit);
   els.aiChatForm.addEventListener("submit", handleAIChatSubmit);
+  els.toggleSignedInDetailsBtn.addEventListener("click", () => {
+    els.signedInEmailWrap.classList.toggle("hidden");
+  });
+  els.openBackOfficeBtn.addEventListener("click", () => {
+    closeAuthModal();
+    setActiveTab("staff");
+  });
   els.logoutBtn.addEventListener("click", async () => {
     logActivity("Logout", "signed out");
     sessionStorage.removeItem(ACCESS_ROLE_KEY);
@@ -1333,7 +1463,8 @@ async function loadParts() {
     console.warn("Live parts could not be loaded.", error);
   }
 
-  parts = mergeParts(demoParts, remoteParts, getLocalParts());
+  const deletedKeys = getDeletedPartKeys();
+  parts = mergeParts(demoParts, remoteParts, getLocalParts()).filter((part) => !deletedKeys.has(getPartKey(part)));
   hydrateCategoryFilter();
   hydrateVehicleFilter();
   renderStockTable();
