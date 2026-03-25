@@ -73,6 +73,8 @@ const els = {
   authStatus: document.getElementById("authStatus"),
   authModalTitle: document.getElementById("authModalTitle"),
   authSubmitBtn: document.getElementById("authSubmitBtn"),
+  loginTabBtn: document.getElementById("loginTabBtn"),
+  signupTabBtn: document.getElementById("signupTabBtn"),
   authRoleHint: document.getElementById("authRoleHint"),
   authAccountType: document.getElementById("authAccountType"),
   authName: document.getElementById("authName"),
@@ -153,6 +155,7 @@ let lastSearchResult = { results: [] };
 const LOCAL_PARTS_KEY = "eas-local-parts";
 const STAFF_CODE = "AES26";
 const DIRECTOR_CODE = "EASD26";
+const DIRECTOR_EMAIL = "samueltakwirira@gmail.com";
 const ACCESS_ROLE_KEY = "eas-access-role";
 const ACTIVITY_LOG_KEY = "eas-activity-log";
 const PAY_AUTH_KEY = "eas-pay-authorization";
@@ -475,22 +478,42 @@ function closeStockDeskModal() {
 
 function setAuthMode(mode) {
   authMode = mode;
-  els.authModalTitle.textContent = "Secure Login";
-  els.authSubmitBtn.textContent = "Login";
+  const loginActive = mode === "login";
+  els.authModalTitle.textContent = loginActive ? "Secure Login" : "Create Employee Account";
+  els.authSubmitBtn.textContent = loginActive ? "Login" : "Create Employee Account";
+
+  els.loginTabBtn.classList.toggle("active-tab", loginActive);
+  els.signupTabBtn.classList.toggle("active-tab", !loginActive);
+  els.loginTabBtn.classList.toggle("text-slate-600", !loginActive);
+  els.signupTabBtn.classList.toggle("text-slate-600", loginActive);
   syncAuthFields();
 }
 
 function syncAuthFields() {
   const role = els.authAccountType.value;
   const needsAccessCode = ["staff", "director"].includes(role);
+  const signupMode = authMode === "signup";
   els.staffCodeWrap.classList.toggle("hidden", !needsAccessCode);
-  if (els.authRoleHint) {
-    els.authRoleHint.textContent =
-      role === "director"
-        ? "Director access unlocks the control room for pricing, inventory, and employee oversight."
-        : "Employee access unlocks the stock desk for day-to-day inventory updates.";
+  els.signupTabBtn.classList.toggle("hidden", role === "director");
+  if (role === "director" && signupMode) {
+    authMode = "login";
+    els.authModalTitle.textContent = "Secure Login";
+    els.authSubmitBtn.textContent = "Open Director Desk";
+    els.loginTabBtn.classList.add("active-tab");
+    els.signupTabBtn.classList.remove("active-tab");
   }
-  els.authSubmitBtn.textContent = role === "director" ? "Open Director Desk" : "Open Staff Desk";
+  if (els.authRoleHint) {
+    if (role === "director") {
+      els.authRoleHint.textContent = "Director access is reserved for the single director email and the director code.";
+    } else if (signupMode) {
+      els.authRoleHint.textContent = "Create an employee account first, then future sessions can use login.";
+    } else {
+      els.authRoleHint.textContent = "Employee access unlocks the stock desk for day-to-day inventory updates.";
+    }
+  }
+  if (authMode === "login") {
+    els.authSubmitBtn.textContent = role === "director" ? "Open Director Desk" : "Open Staff Desk";
+  }
 }
 
 function setActiveTab(tabId) {
@@ -965,6 +988,7 @@ async function handleAuthSubmit(event) {
   const name = els.authName.value.trim();
   const accountType = els.authAccountType.value;
   const accessCode = els.staffCodeInput.value.trim();
+  const isSignup = authMode === "signup";
 
   if (!email || !password) {
     els.authStatus.textContent = "Email and password are required.";
@@ -975,6 +999,11 @@ async function handleAuthSubmit(event) {
   els.authSubmitBtn.classList.add("opacity-60", "cursor-not-allowed");
 
   try {
+    if (accountType === "director" && email.toLowerCase() !== DIRECTOR_EMAIL) {
+      els.authStatus.textContent = "Director access is limited to the director email address.";
+      return;
+    }
+
     if (accountType === "staff" && accessCode !== STAFF_CODE) {
       els.authStatus.textContent = "Employee access requires the correct access code.";
       return;
@@ -986,36 +1015,56 @@ async function handleAuthSubmit(event) {
     }
 
     let result;
-    let createdAccount = false;
 
-    try {
-      result = await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      if (error.code !== "auth/user-not-found" && error.code !== "auth/invalid-credential") {
-        throw error;
+    if (isSignup) {
+      if (accountType !== "staff") {
+        els.authStatus.textContent = "Only employees can create new staff accounts here.";
+        return;
       }
 
       if (!name) {
-        els.authStatus.textContent = "Enter the full name for this employee or director account.";
+        els.authStatus.textContent = "Enter the employee full name before creating the account.";
         return;
       }
 
       result = await createUserWithEmailAndPassword(auth, email, password);
-      createdAccount = true;
-    }
+      await ensureUserDoc(result.user, name, "staff");
+      sessionStorage.setItem(ACCESS_ROLE_KEY, "staff");
+      logActivity("Account Created", "created and signed in as staff", {
+        email: result.user.email || email,
+        name,
+        role: "staff"
+      });
+      els.authStatus.textContent = "Employee account created and opened.";
+    } else {
+      try {
+        result = await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        if (accountType === "director" && (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential")) {
+          if (!name) {
+            els.authStatus.textContent = "Enter the director full name before opening the director account.";
+            return;
+          }
 
-    const signedInRole = accountType;
-    await ensureUserDoc(result.user, name, signedInRole);
-    sessionStorage.setItem(ACCESS_ROLE_KEY, signedInRole);
-    logActivity(createdAccount ? "Account Created" : "Login", `${createdAccount ? "created and signed in as" : "signed in as"} ${signedInRole}`, {
-      email: result.user.email || email,
-      name: name || result.user.displayName || getFirstName(result.user.email || email),
-      role: signedInRole
-    });
-    els.authStatus.textContent =
-      signedInRole === "director"
-        ? createdAccount ? "Director account created and opened." : "Director login successful."
-        : createdAccount ? "Employee account created and opened." : "Employee login successful.";
+          result = await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          throw error;
+        }
+      }
+
+      const signedInRole = accountType;
+      await ensureUserDoc(result.user, name, signedInRole);
+      sessionStorage.setItem(ACCESS_ROLE_KEY, signedInRole);
+      logActivity("Login", `signed in as ${signedInRole}`, {
+        email: result.user.email || email,
+        name: name || result.user.displayName || getFirstName(result.user.email || email),
+        role: signedInRole
+      });
+      els.authStatus.textContent =
+        signedInRole === "director"
+          ? "Director login successful."
+          : "Employee login successful.";
+    }
 
     els.authForm.reset();
     syncAuthFields();
@@ -1519,6 +1568,8 @@ function wireEvents() {
   els.closeAuthBtn.addEventListener("click", closeAuthModal);
   els.openReviewsBtn.addEventListener("click", openReviewsModal);
   els.closeReviewsBtn.addEventListener("click", closeReviewsModal);
+  els.loginTabBtn.addEventListener("click", () => setAuthMode("login"));
+  els.signupTabBtn.addEventListener("click", () => setAuthMode("signup"));
   els.authAccountType.addEventListener("change", syncAuthFields);
   els.authForm.addEventListener("submit", handleAuthSubmit);
   els.aiChatForm.addEventListener("submit", handleAIChatSubmit);
