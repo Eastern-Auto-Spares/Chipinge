@@ -588,6 +588,15 @@
       </div>
 
       <form id="authForm" class="mt-5 space-y-4">
+        <div id="authRoleHint" class="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm leading-6 text-cyan-800">
+          Employee access uses the employee code. Director access unlocks pricing and oversight tools.
+        </div>
+
+        <div>
+          <label class="text-sm font-medium text-slate-700">Full Name</label>
+          <input id="authName" type="text" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" placeholder="Samuel Takwirira" />
+        </div>
+
         <div>
           <label class="text-sm font-medium text-slate-700">Role</label>
           <select id="authAccountType" class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
@@ -616,7 +625,7 @@
         </button>
 
         <div id="authStatus" class="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
-          Use an employee or director account to continue.
+          Use your staff email, password, full name, and access code to continue.
         </div>
       </form>
 

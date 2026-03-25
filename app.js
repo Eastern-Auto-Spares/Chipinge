@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import {
   getAuth,
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
@@ -72,15 +73,13 @@ const els = {
   authStatus: document.getElementById("authStatus"),
   authModalTitle: document.getElementById("authModalTitle"),
   authSubmitBtn: document.getElementById("authSubmitBtn"),
-  loginTabBtn: document.getElementById("loginTabBtn"),
-  signupTabBtn: document.getElementById("signupTabBtn"),
+  authRoleHint: document.getElementById("authRoleHint"),
   authAccountType: document.getElementById("authAccountType"),
   authName: document.getElementById("authName"),
   authEmail: document.getElementById("authEmail"),
   authPassword: document.getElementById("authPassword"),
   staffCodeWrap: document.getElementById("staffCodeWrap"),
   staffCodeInput: document.getElementById("staffCodeInput"),
-  nameFieldWrap: document.getElementById("nameFieldWrap"),
   signedInPanel: document.getElementById("signedInPanel"),
   signedInRoleText: document.getElementById("signedInRoleText"),
   signedInNameText: document.getElementById("signedInNameText"),
@@ -478,13 +477,20 @@ function setAuthMode(mode) {
   authMode = mode;
   els.authModalTitle.textContent = "Secure Login";
   els.authSubmitBtn.textContent = "Login";
-  if (els.nameFieldWrap) els.nameFieldWrap.classList.add("hidden");
   syncAuthFields();
 }
 
 function syncAuthFields() {
-  const needsAccessCode = ["staff", "director"].includes(els.authAccountType.value);
+  const role = els.authAccountType.value;
+  const needsAccessCode = ["staff", "director"].includes(role);
   els.staffCodeWrap.classList.toggle("hidden", !needsAccessCode);
+  if (els.authRoleHint) {
+    els.authRoleHint.textContent =
+      role === "director"
+        ? "Director access unlocks the control room for pricing, inventory, and employee oversight."
+        : "Employee access unlocks the stock desk for day-to-day inventory updates.";
+  }
+  els.authSubmitBtn.textContent = role === "director" ? "Open Director Desk" : "Open Staff Desk";
 }
 
 function setActiveTab(tabId) {
@@ -956,6 +962,7 @@ async function handleAuthSubmit(event) {
   event.preventDefault();
   const email = els.authEmail.value.trim();
   const password = els.authPassword.value.trim();
+  const name = els.authName.value.trim();
   const accountType = els.authAccountType.value;
   const accessCode = els.staffCodeInput.value.trim();
 
@@ -978,19 +985,37 @@ async function handleAuthSubmit(event) {
       return;
     }
 
-    const result = await signInWithEmailAndPassword(auth, email, password);
+    let result;
+    let createdAccount = false;
+
+    try {
+      result = await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      if (error.code !== "auth/user-not-found" && error.code !== "auth/invalid-credential") {
+        throw error;
+      }
+
+      if (!name) {
+        els.authStatus.textContent = "Enter the full name for this employee or director account.";
+        return;
+      }
+
+      result = await createUserWithEmailAndPassword(auth, email, password);
+      createdAccount = true;
+    }
+
     const signedInRole = accountType;
-    await ensureUserDoc(result.user, "", signedInRole);
+    await ensureUserDoc(result.user, name, signedInRole);
     sessionStorage.setItem(ACCESS_ROLE_KEY, signedInRole);
-    logActivity("Login", `signed in as ${signedInRole}`, {
+    logActivity(createdAccount ? "Account Created" : "Login", `${createdAccount ? "created and signed in as" : "signed in as"} ${signedInRole}`, {
       email: result.user.email || email,
-      name: result.user.displayName || getFirstName(result.user.email || email),
+      name: name || result.user.displayName || getFirstName(result.user.email || email),
       role: signedInRole
     });
     els.authStatus.textContent =
       signedInRole === "director"
-        ? "Director login successful."
-        : "Employee login successful.";
+        ? createdAccount ? "Director account created and opened." : "Director login successful."
+        : createdAccount ? "Employee account created and opened." : "Employee login successful.";
 
     els.authForm.reset();
     syncAuthFields();
@@ -1299,7 +1324,6 @@ function updateSessionUI() {
   els.authStateMini.innerHTML = isSignedIn
     ? `<span class="font-display text-sm font-bold text-white">${profileName}</span><span class="mx-1 text-slate-500">•</span><span>${shortenEmail(currentUser.email)}</span>`
     : "";
-  if (els.signupTabBtn) els.signupTabBtn.classList.add("hidden");
   els.signedInRoleText.textContent = isDirector ? "Director Control" : isStaff ? "Employee Access" : "Staff Login";
   els.signedInNameText.textContent = fullName;
   els.signedInEmailText.textContent = currentUser?.email || "";
