@@ -901,7 +901,7 @@ Please share the current price for:
 
 Thank you.`);
 
-  window.open(`https://wa.me/16038170479?text=${message}`, "_blank");
+  window.open(`https://wa.me/15559092260?text=${message}`, "_blank");
 }
 
 function buildLocalEasternAIReply(message) {
@@ -1196,7 +1196,7 @@ Notes:
 ${notes}`;
 
   const encoded = encodeURIComponent(message);
-  window.open(`https://wa.me/16038170479?text=${encoded}`, "_blank");
+  window.open(`https://wa.me/15559092260?text=${encoded}`, "_blank");
 }
 
 async function createPartWithAutoId(data) {
